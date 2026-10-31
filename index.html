@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-X6xbCq8UXYnHmAaIbt5eS2abZft6GXB/JWhm0i9/1Cw='; style-src 'sha256-bpH1xBS5y7lhAwelr0A1p03Y05EMSGjEabW0eUWG9KQ='; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="description" content="Cuentas Claras: control sencillo de boletas de luz, gas, agua e impuestos.">
+<title>Cuentas Claras</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231d4ed8'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E$%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f3f5f9;--card:#ffffff;--text:#111827;--muted:#374151;--border:#9ca3af;
+  --primary:#1d4ed8;--primary-hover:#1e40af;--on-primary:#ffffff;
+  --ok:#166534;--ok-bg:#dcfce7;--alerta:#854d0e;--alerta-bg:#fef3c7;
+  --peligro:#991b1b;--peligro-bg:#fee2e2;--info:#1e3a8a;--info-bg:#dbeafe;
+  --barra:#1d4ed8;--barra-est:#b45309;--focus:#f59e0b;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f172a;--card:#1e293b;--text:#f8fafc;--muted:#e2e8f0;--border:#64748b;
+    --primary:#2563eb;--primary-hover:#1d4ed8;--on-primary:#ffffff;
+    --ok:#86efac;--ok-bg:#14532d;--alerta:#fde68a;--alerta-bg:#713f12;
+    --peligro:#fecaca;--peligro-bg:#7f1d1d;--info:#bfdbfe;--info-bg:#1e3a8a;
+    --barra:#60a5fa;--barra-est:#fbbf24;--focus:#fbbf24;
+  }
+}
+*{box-sizing:border-box}
+html{font-size:18px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:4px solid var(--focus);outline-offset:2px}
+.contenedor{max-width:640px;margin:0 auto;padding:16px}
+header{background:var(--card);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:5}
+.cabecera{max-width:640px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;flex:none}
+h1{font-size:1.5rem;margin:0;line-height:1.2}
+.sub{margin:0;color:var(--muted);font-size:1rem}
+h2{font-size:1.3rem;margin:0 0 12px}
+.tarjeta{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:18px;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:12px 20px;border-radius:14px;border:2px solid transparent;font-weight:700;font-size:1.1rem;cursor:pointer;text-align:center}
+.btn-primario{background:var(--primary);color:var(--on-primary)}
+.btn-primario:hover{background:var(--primary-hover)}
+.btn-secundario{background:transparent;border-color:var(--border);color:var(--text)}
+.btn-secundario:hover{background:var(--bg)}
+.btn-peligro{background:transparent;border-color:var(--peligro);color:var(--peligro);min-height:48px;padding:8px 14px;font-size:1rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ancho{width:100%}
+.btn-grande{font-size:1.3rem;min-height:72px}
+.btn-icono{min-width:56px;padding:8px 14px}
+.cta p{margin:0 0 14px;font-size:1.1rem}
+.vacio{color:var(--muted);text-align:center;padding:12px 0;margin:0}
+.resultado{border:2px solid var(--border);border-left-width:10px;border-radius:14px;padding:16px}
+.resultado.info{border-color:var(--info);background:var(--info-bg)}
+.resultado.ok{border-color:var(--ok);background:var(--ok-bg)}
+.resultado.alerta{border-color:var(--alerta);background:var(--alerta-bg)}
+.resultado.peligro{border-color:var(--peligro);background:var(--peligro-bg)}
+.res-titulo{font-size:1.4rem;font-weight:800;margin:0}
+.info .res-titulo{color:var(--info)}.ok .res-titulo{color:var(--ok)}.alerta .res-titulo{color:var(--alerta)}.peligro .res-titulo{color:var(--peligro)}
+.res-sub{margin:4px 0 0;font-size:1.05rem}
+.res-monto{font-size:2.2rem;font-weight:800;margin:8px 0}
+.res-lista{margin:0 0 12px;padding-left:1.2rem}
+.res-lista li{margin-bottom:8px;font-size:1.1rem}
+.res-pie{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px}
+.res-pie small{font-size:.95rem}
+.selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.selector .btn{min-height:52px;font-size:1rem;padding:8px 14px;flex:1 1 auto}
+.selector .btn[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.grafico svg{width:100%;height:auto;display:block}
+.grafico .etq{fill:var(--text);font-size:13px}
+.grafico .val{fill:var(--text);font-size:12px;font-weight:700}
+.grafico .eje{stroke:var(--border);stroke-width:1}
+.grafico .barra{fill:var(--barra)}
+.grafico .barra-est{fill:var(--barra-est)}
+.leyenda{font-size:.95rem;color:var(--muted);margin:8px 0 0}
+.lista{list-style:none;margin:0;padding:0}
+.lista li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.lista li:first-child{border-top:none}
+.lista .per{font-weight:700;font-size:1.1rem;margin:0}
+.lista .det{margin:0;color:var(--muted)}
+.etiqueta-est{display:inline-block;background:var(--alerta-bg);color:var(--alerta);border-radius:8px;padding:0 8px;font-size:.9rem;font-weight:700;margin-left:6px}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.campo{display:block;font-weight:700;font-size:1.05rem;margin:14px 0 6px}
+.ayuda{display:block;font-weight:400;color:var(--muted);font-size:.95rem}
+input[type=text],select{width:100%;min-height:56px;padding:10px 14px;border:2px solid var(--border);border-radius:12px;background:var(--bg);font-size:1.2rem}
+.chequeo{display:flex;gap:12px;align-items:flex-start;margin:16px 0;font-size:1.05rem;cursor:pointer}
+.chequeo input{width:28px;height:28px;flex:none;margin-top:2px;accent-color:var(--primary)}
+.vista-previa{margin:6px 0 0;font-weight:700;color:var(--primary);min-height:1.5em}
+.error{color:var(--peligro);font-weight:700;margin:10px 0 0;min-height:1.5em}
+.acciones{display:flex;gap:10px;margin-top:18px}
+.acciones .btn{flex:1}
+dialog{border:2px solid var(--border);border-radius:18px;background:var(--card);color:var(--text);padding:20px;width:min(560px,calc(100% - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.aviso-texto{max-height:45vh;overflow-y:auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0;margin:12px 0}
+.aviso-texto p{margin:8px 0}
+.respaldo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.oculto{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.banner-error{background:var(--peligro-bg);color:var(--peligro);border:2px solid var(--peligro);border-radius:12px;padding:12px;font-weight:700;margin-bottom:16px}
+@media (max-width:420px){.fila,.respaldo{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cabecera">
+    <div class="marca">
+      <div class="logo" aria-hidden="true">$</div>
+      <div>
+        <h1>Cuentas Claras</h1>
+        <p class="sub">Control de boletas de servicios</p>
+      </div>
+    </div>
+    <button type="button" class="btn btn-secundario btn-icono" id="btn-instrucciones" aria-label="Escuchar instrucciones">🔊</button>
+  </div>
+</header>
+
+<main class="contenedor">
+  <div id="banner-error" class="banner-error oculto" role="alert"></div>
+
+  <section class="tarjeta cta">
+    <h2>¿Llegó una boleta nueva?</h2>
+    <p>Copiá los datos de la boleta y la aplicación la compara con las anteriores.</p>
+    <button type="button" class="btn btn-primario btn-ancho btn-grande" id="btn-cargar">➕ Cargar boleta</button>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="tit-resultado">
+    <h2 id="tit-resultado">Última boleta revisada</h2>
+    <div id="resultado" aria-live="polite">
+      <p class="vacio">Todavía no cargaste ninguna boleta.</p>
+    </div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="tit-historial">
+    <h2 id="tit-historial">Historial por servicio</h2>
+    <div class="selector" id="selector-servicio" role="group" aria-label="Elegir servicio"></div>
+    <div class="grafico" id="grafico"></div>
+    <p class="leyenda" id="leyenda-grafico"></p>
+    <ul class="lista" id="lista-boletas"></ul>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="tit-respaldo">
+    <h2 id="tit-respaldo">💾 Copia de seguridad</h2>
+    <p class="sub">Tus boletas se guardan solo en este dispositivo. Guardá una copia por si cambiás de teléfono o se borra el navegador.</p>
+    <div class="respaldo">
+      <button type="button" class="btn btn-secundario" id="btn-exportar">⬇️ Guardar copia</button>
+      <button type="button" class="btn btn-secundario" id="btn-importar">⬆️ Recuperar copia</button>
+      <input type="file" id="input-importar" accept=".json,application/json" class="oculto" tabindex="-1" aria-hidden="true">
+    </div>
+  </section>
+</main>
+
+<!-- AVISO INICIAL -->
+<dialog id="dlg-aviso" aria-labelledby="tit-aviso">
+  <h2 id="tit-aviso">⚠️ Aviso importante</h2>
+  <div class="aviso-texto">
+    <p><strong>Cuentas Claras</strong> es una herramienta orientativa para que lleves el control de tus boletas.</p>
+    <p><strong>No es asesoramiento legal ni contable.</strong> Las alertas no tienen validez como prueba ante empresas, entes reguladores ni la Justicia. Ante una duda, reclamá a la empresa o consultá a Defensa del Consumidor.</p>
+    <p><strong>Privacidad:</strong> tus datos quedan solamente en este dispositivo. La aplicación no envía información a ningún servidor.</p>
+  </div>
+  <label class="chequeo">
+    <input type="checkbox" id="chk-aviso">
+    <span>Leí el aviso y entiendo que la aplicación es solo orientativa.</span>
+  </label>
+  <button type="button" class="btn btn-primario btn-ancho" id="btn-aceptar-aviso" disabled>Entendido, continuar</button>
+</dialog>
+
+<!-- CARGA DE BOLETA -->
+<dialog id="dlg-carga" aria-labelledby="tit-carga">
+  <h2 id="tit-carga">Nueva boleta</h2>
+  <form id="form-boleta" novalidate>
+    <label class="campo" for="in-servicio">Servicio o impuesto</label>
+    <select id="in-servicio"></select>
+
+    <span class="campo" id="lbl-periodo">Mes de la boleta</span>
+    <div class="fila" role="group" aria-labelledby="lbl-periodo">
+      <select id="in-mes" aria-label="Mes"></select>
+      <select id="in-anio" aria-label="Año"></select>
+    </div>
+
+    <label class="campo" for="in-monto">Total a pagar ($)
+      <span class="ayuda">Escribilo como figura en la boleta, por ejemplo 35.174,50</span>
+    </label>
+    <input type="text" id="in-monto" inputmode="decimal" autocomplete="off" maxlength="20">
+    <p class="vista-previa" id="prev-monto" aria-live="polite"></p>
+
+    <div id="bloque-consumo">
+      <label class="campo" for="in-consumo"><span id="lbl-consumo">Consumo</span>
+        <span class="ayuda">Opcional. Ayuda a saber si subió el uso o subió el precio.</span>
+      </label>
+      <input type="text" id="in-consumo" inputmode="decimal" autocomplete="off" maxlength="12">
+    </div>
+
+    <label class="chequeo">
+      <input type="checkbox" id="in-estimado">
+      <span>La boleta dice <strong>"lectura estimada"</strong></span>
+    </label>
+
+    <p class="error" id="error-form" role="alert"></p>
+
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario" id="btn-cancelar">Cancelar</button>
+      <button type="submit" class="btn btn-primario">Guardar y revisar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+'use strict';
+(function () {
+  // ---------- Configuración ----------
+  var SERVICIOS = {
+    Electricidad: { nombre: 'Luz', largo: 'Luz (Edenor / Edesur / provincial)', unidad: 'kWh', conConsumo: true },
+    Gas:          { nombre: 'Gas', largo: 'Gas (Metrogas / Naturgy / Camuzzi)', unidad: 'm³', conConsumo: true },
+    Agua:         { nombre: 'Agua', largo: 'Agua (AySA / ABSA)', unidad: 'm³', conConsumo: true },
+    Municipal:    { nombre: 'Municipal', largo: 'Tasa municipal / ABL', unidad: '', conConsumo: false },
+    Provincial:   { nombre: 'Provincial', largo: 'Impuesto provincial (ARBA / AGIP)', unidad: '', conConsumo: false }
+  };
+  var CLAVES = Object.keys(SERVICIOS);
+  var UMBRAL_ROJO = 35;
+  var UMBRAL_AMARILLO = 15;
+  var MONTO_MAX = 1e10;
+  var CONSUMO_MAX = 1e7;
+  var MAX_ARCHIVO = 1024 * 1024;
+  var MAX_REGISTROS = 2000;
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var CLAVE_AVISO = 'cuentas_claras_legal_accepted';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmtPesos = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var fmtNum = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 });
+
+  var db = null;
+  var registros = [];
+  var servicioVista = CLAVES[0];
+  var ultimoId = null;
+
+  // ---------- Utilidades ----------
+  function tieneClave(obj, k) { return Object.prototype.hasOwnProperty.call(obj, k); }
+  function pesos(n) { return fmtPesos.format(n); }
+  function pct(nuevo, viejo) { return ((nuevo - viejo) / viejo) * 100; }
+  function pctTexto(v) { return Math.round(Math.abs(v)) + '%'; }
+  function periodoTexto(p) { var x = p.split('-'); return MESES[+x[1] - 1] + ' ' + x[0]; }
+  function periodoCorto(p) { var x = p.split('-'); return MESES[+x[1] - 1].slice(0, 3) + ' ' + x[0].slice(2); }
+  function mesesEntre(a, b) {
+    var x = a.split('-'), y = b.split('-');
+    return (+y[0] * 12 + +y[1]) - (+x[0] * 12 + +x[1]);
+  }
+  function compacto(n) {
+    if (n >= 1e6) return '$' + fmtNum.format(Math.round(n / 1e5) / 10) + ' M';
+    if (n >= 1e3) return '$' + fmtNum.format(Math.round(n / 1e3)) + ' mil';
+    return '$' + fmtNum.format(Math.round(n));
+  }
+  function el(tag, clase, texto) {
+    var e = document.createElement(tag);
+    if (clase) e.className = clase;
+    if (texto !== undefined && texto !== null) e.textContent = texto;
+    return e;
+  }
+  function vaciar(nodo) { while (nodo.firstChild) nodo.removeChild(nodo.firstChild); }
+  function mostrarError(msg) { var b = $('banner-error'); b.textContent = msg; b.classList.remove('oculto'); }
+
+  // Acepta formato argentino (35.174,50), con o sin $ y espacios.
+  function parseNumeroAR(txt) {
+    if (typeof txt !== 'string') return NaN;
+    var s = txt.replace(/[$\s]/g, '');
+    if (!s || !/^[0-9.,]+$/.test(s)) return NaN;
+    var punto = s.indexOf('.') !== -1, coma = s.indexOf(',') !== -1;
+    if (punto && coma) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+      else s = s.replace(/,/g, '');
+    } else if (coma) {
+      if ((s.match(/,/g) || []).length > 1) return NaN;
+      s = s.replace(',', '.');
+    } else if (punto) {
+      if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+      else if ((s.match(/\./g) || []).length > 1) return NaN;
+    }
+    var n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  // Valida y limpia cualquier registro (de la base o de un archivo importado).
+  // Devuelve un objeto nuevo solo con campos conocidos, o null si no es válido.
+  function validarRegistro(r) {
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+    if (typeof r.servicio !== 'string' || !tieneClave(SERVICIOS, r.servicio)) return null;
+    if (typeof r.monto !== 'number' || !Number.isFinite(r.monto) || r.monto <= 0 || r.monto > MONTO_MAX) return null;
+    var consumo = 0;
+    if (r.consumo !== undefined && r.consumo !== null) {
+      if (typeof r.consumo !== 'number' || !Number.isFinite(r.consumo) || r.consumo < 0 || r.consumo > CONSUMO_MAX) return null;
+      consumo = r.consumo;
+    }
+    var fecha = new Date(typeof r.fecha === 'string' ? r.fecha : NaN);
+    var fechaOk = !isNaN(fecha.getTime());
+    var periodo = null;
+    if (typeof r.periodo === 'string' && /^(20\d\d)-(0[1-9]|1[0-2])$/.test(r.periodo)) {
+      periodo = r.periodo;
+    } else if (fechaOk) {
+      // Registros de la versión anterior: se toma el mes en que se cargaron.
+      periodo = fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0');
+    }
+    if (!periodo) return null;
+    return {
+      servicio: r.servicio,
+      periodo: periodo,
+      monto: Math.round(r.monto * 100) / 100,
+      consumo: consumo,
+      esEstimado: r.esEstimado === true,
+      fecha: fechaOk ? fecha.toISOString() : new Date().toISOString()
+    };
+  }
+
+  // ---------- Base de datos local ----------
+  function abrirDB() {
+    return new Promise(function (resolve, reject) {
+      if (!('indexedDB' in window)) { reject(new Error('sin indexedDB')); return; }
+      var req = indexedDB.open('CuentasClarasDB', 1);
+      req.onupgradeneeded = function (e) {
+        var d = e.target.result;
+        if (!d.objectStoreNames.contains('boletas')) d.createObjectStore('boletas', { keyPath: 'id', autoIncrement: true });
+      };
+      req.onsuccess = function (e) { resolve(e.target.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function leerTodo() {
+    return new Promise(function (resolve, reject) {
+      var req = db.transaction('boletas', 'readonly').objectStore('boletas').getAll();
+      req.onsuccess = function () { resolve(req.result || []); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function agregar(lista) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('boletas', 'readwrite');
+      var store = tx.objectStore('boletas');
+      var ids = [];
+      lista.forEach(function (r) { store.add(r).onsuccess = function (e) { ids.push(e.target.result); }; });
+      tx.oncomplete = function () { resolve(ids); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }
+  function borrar(id) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('boletas', 'readwrite');
+      tx.objectStore('boletas').delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }
+  function recargar() {
+    return leerTodo().then(function (crudos) {
+      registros = [];
+      crudos.forEach(function (c) {
+        var v = validarRegistro(c);
+        if (v && typeof c.id === 'number') { v.id = c.id; registros.push(v); }
+      });
+      if (ultimoId === null && registros.length) {
+        ultimoId = Math.max.apply(null, registros.map(function (r) { return r.id; }));
+      }
+      renderTodo();
+    });
+  }
+
+  // ---------- Motor de revisión (semáforo) ----------
+  var ORDEN = ['info', 'ok', 'alerta', 'peligro'];
+  var TITULOS = {
+    info: '🔵 Primera boleta registrada',
+    ok: '🟢 Boleta en orden',
+    alerta: '🟡 Conviene revisarla',
+    peligro: '🔴 Aumento importante'
+  };
+
+  function evaluar(reg, todos) {
+    var s = SERVICIOS[reg.servicio];
+    var previas = todos.filter(function (r) { return r.servicio === reg.servicio && r.periodo < reg.periodo; })
+                       .sort(function (a, b) { return a.periodo < b.periodo ? -1 : a.periodo > b.periodo ? 1 : a.id - b.id; });
+    var nivel = 'ok';
+    var msgs = [];
+    function subir(n) { if (ORDEN.indexOf(n) > ORDEN.indexOf(nivel)) nivel = n; }
+
+    if (!previas.length) {
+      nivel = 'info';
+      msgs.push('No hay boletas anteriores de ' + s.nombre + ' para comparar. Queda guardada como referencia para las próximas.');
+    } else {
+      var ant = previas[previas.length - 1];
+      var v = pct(reg.monto, ant.monto);
+      var refAnt = '(' + periodoTexto(ant.periodo) + ': ' + pesos(ant.monto) + ')';
+      if (v > UMBRAL_ROJO) {
+        subir('peligro');
+        msgs.push('Subió ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '.');
+      } else if (v > UMBRAL_AMARILLO) {
+        subir('alerta');
+        msgs.push('Subió ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '.');
+      } else if (v < -UMBRAL_ROJO) {
+        subir('alerta');
+        msgs.push('Bajó ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '. Si la lectura fue estimada, puede venir un ajuste más adelante.');
+      } else {
+        msgs.push('El monto es parecido al de la boleta anterior ' + refAnt + '.');
+      }
+
+      var gap = mesesEntre(ant.periodo, reg.periodo);
+      if (gap > 1) {
+        msgs.push('Entre la boleta anterior y esta pasaron ' + gap + ' meses. Si el servicio se cobra cada dos meses es normal; si no, falta alguna boleta y la comparación es aproximada.');
+      }
+
+      if (s.conConsumo && reg.consumo > 0 && ant.consumo > 0 && v > UMBRAL_AMARILLO) {
+        var vc = pct(reg.consumo, ant.consumo);
+        var det = fmtNum.format(ant.consumo) + ' a ' + fmtNum.format(reg.consumo) + ' ' + s.unidad;
+        if (vc >= v * 0.6) {
+          msgs.push('El consumo también subió (de ' + det + '). Gran parte del aumento se explica por mayor uso.');
+        } else {
+          msgs.push('El consumo casi no cambió (de ' + det + '). El aumento viene del precio, cargos o impuestos: conviene revisar el detalle de la boleta.');
+        }
+      }
+
+      if (previas.length >= 3) {
+        var ult = previas.slice(-6);
+        var prom = ult.reduce(function (a, r) { return a + r.monto; }, 0) / ult.length;
+        var vp = pct(reg.monto, prom);
+        if (vp > UMBRAL_ROJO && v <= UMBRAL_ROJO) {
+          subir('alerta');
+          msgs.push('Está ' + pctTexto(vp) + ' por encima del promedio de tus últimas ' + ult.length + ' boletas (' + pesos(prom) + ').');
+        }
+      }
+    }
+
+    if (reg.esEstimado) {
+      subir('alerta');
+      msgs.push('Dice "lectura estimada": la empresa no leyó el medidor. Anotá la lectura real de tu medidor para controlar que no te cobren de más en la próxima.');
+    }
+
+    var duplicadas = todos.filter(function (r) { return r.id !== reg.id && r.servicio === reg.servicio && r.periodo === reg.periodo; });
+    if (duplicadas.length) {
+      subir('alerta');
+      msgs.push('Hay otra boleta de ' + s.nombre + ' cargada para ' + periodoTexto(reg.periodo) + '. Si es un error, borrá la repetida en el historial.');
+    }
+
+    return { nivel: nivel, titulo: TITULOS[nivel], msgs: msgs };
+  }
+
+  // ---------- Pantalla ----------
+  function renderResultado() {
+    var cont = $('resultado');
+    vaciar(cont);
+    var reg = registros.filter(function (r) { return r.id === ultimoId; })[0];
+    if (!reg) { cont.appendChild(el('p', 'vacio', 'Todavía no cargaste ninguna boleta.')); return; }
+    var ev = evaluar(reg, registros);
+    var t = el('div', 'resultado ' + ev.nivel);
+    t.appendChild(el('p', 'res-titulo', ev.titulo));
+    t.appendChild(el('p', 'res-sub', SERVICIOS[reg.servicio].nombre + ' · ' + periodoTexto(reg.periodo)));
+    t.appendChild(el('p', 'res-monto', pesos(reg.monto)));
+    var ul = el('ul', 'res-lista');
+    ev.msgs.forEach(function (m) { ul.appendChild(el('li', null, m)); });
+    t.appendChild(ul);
+    var pie = el('div', 'res-pie');
+    pie.appendChild(el('small', null, 'Aviso orientativo, sin validez legal.'));
+    var b = el('button', 'btn btn-secundario', '🔊 Escuchar');
+    b.type = 'button';
+    b.addEventListener('click', function () {
+      hablar(ev.titulo.replace(/^\S+\s/, '') + '. ' + SERVICIOS[reg.servicio].nombre + ', ' + periodoTexto(reg.periodo) + ', ' + pesos(reg.monto) + '. ' + ev.msgs.join(' '));
+    });
+    pie.appendChild(b);
+    t.appendChild(pie);
+    cont.appendChild(t);
+  }
+
+  function renderSelector() {
+    var cont = $('selector-servicio');
+    vaciar(cont);
+    CLAVES.forEach(function (k) {
+      var b = el('button', 'btn btn-secundario', SERVICIOS[k].nombre);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(k === servicioVista));
+      b.addEventListener('click', function () { servicioVista = k; renderHistorial(); renderSelector(); });
+      cont.appendChild(b);
+    });
+  }
+
+  function renderHistorial() {
+    var datos = registros.filter(function (r) { return r.servicio === servicioVista; })
+                         .sort(function (a, b) { return a.periodo < b.periodo ? -1 : a.periodo > b.periodo ? 1 : a.id - b.id; });
+    renderGrafico(datos.slice(-12));
+    var lista = $('lista-boletas');
+    vaciar(lista);
+    if (!datos.length) {
+      lista.appendChild(el('li', 'vacio', 'No hay boletas de ' + SERVICIOS[servicioVista].nombre + ' cargadas.'));
+      return;
+    }
+    datos.slice().reverse().forEach(function (r) {
+      var li = el('li');
+      var info = el('div');
+      var per = el('p', 'per', periodoTexto(r.periodo));
+      if (r.esEstimado) per.appendChild(el('span', 'etiqueta-est', 'Estimada'));
+      info.appendChild(per);
+      var det = pesos(r.monto);
+      if (r.consumo > 0) det += ' · ' + fmtNum.format(r.consumo) + ' ' + SERVICIOS[r.servicio].unidad;
+      info.appendChild(el('p', 'det', det));
+      li.appendChild(info);
+      var b = el('button', 'btn btn-peligro', 'Borrar');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Borrar boleta de ' + periodoTexto(r.periodo));
+      b.addEventListener('click', function () {
+        var ok = window.confirm('¿Borrar la boleta de ' + SERVICIOS[r.servicio].nombre + ' de ' + periodoTexto(r.periodo) + ' por ' + pesos(r.monto) + '?\n\nNo se puede deshacer.');
+        if (!ok) return;
+        borrar(r.id).then(function () {
+          if (ultimoId === r.id) ultimoId = null;
+          return recargar();
+        }).catch(function () { mostrarError('No se pudo borrar la boleta.'); });
+      });
+      li.appendChild(b);
+      lista.appendChild(li);
+    });
+  }
+
+  function renderGrafico(datos) {
+    var cont = $('grafico');
+    vaciar(cont);
+    var ley = $('leyenda-grafico');
+    if (datos.length < 2) {
+      ley.textContent = datos.length ? 'El gráfico aparece cuando haya al menos dos boletas de este servicio.' : '';
+      return;
+    }
+    var NS = 'http://www.w3.org/2000/svg';
+    var W = 360, H = 220, top = 24, bottom = 30, left = 6, right = 6;
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('role', 'img');
+    var max = Math.max.apply(null, datos.map(function (r) { return r.monto; }));
+    var ancho = (W - left - right) / datos.length;
+    var alto = H - top - bottom;
+    var resumen = [];
+    datos.forEach(function (r, i) {
+      var h = Math.max(2, (r.monto / max) * alto);
+      var x = left + i * ancho + ancho * 0.15;
+      var y = top + alto - h;
+      var rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', x.toFixed(1));
+      rect.setAttribute('y', y.toFixed(1));
+      rect.setAttribute('width', (ancho * 0.7).toFixed(1));
+      rect.setAttribute('height', h.toFixed(1));
+      rect.setAttribute('rx', '4');
+      rect.setAttribute('class', r.esEstimado ? 'barra-est' : 'barra');
+      svg.appendChild(rect);
+      if (datos.length <= 8) {
+        var tv = document.createElementNS(NS, 'text');
+        tv.setAttribute('x', (x + ancho * 0.35).toFixed(1));
+        tv.setAttribute('y', (y - 6).toFixed(1));
+        tv.setAttribute('text-anchor', 'middle');
+        tv.setAttribute('class', 'val');
+        tv.textContent = compacto(r.monto);
+        svg.appendChild(tv);
+      }
+      var te = document.createElementNS(NS, 'text');
+      te.setAttribute('x', (x + ancho * 0.35).toFixed(1));
+      te.setAttribute('y', String(H - 10));
+      te.setAttribute('text-anchor', 'middle');
+      te.setAttribute('class', 'etq');
+      te.textContent = periodoCorto(r.periodo);
+      svg.appendChild(te);
+      resumen.push(periodoTexto(r.periodo) + ': ' + pesos(r.monto));
+    });
+    var eje = document.createElementNS(NS, 'line');
+    eje.setAttribute('x1', '0'); eje.setAttribute('x2', String(W));
+    eje.setAttribute('y1', String(top + alto)); eje.setAttribute('y2', String(top + alto));
+    eje.setAttribute('class', 'eje');
+    svg.appendChild(eje);
+    svg.setAttribute('aria-label', 'Montos de ' + SERVICIOS[servicioVista].nombre + '. ' + resumen.join('; '));
+    cont.appendChild(svg);
+    ley.textContent = datos.some(function (r) { return r.esEstimado; })
+      ? 'Barras naranjas: boletas con lectura estimada.' : '';
+  }
+
+  function renderTodo() { renderResultado(); renderSelector(); renderHistorial(); }
+
+  // ---------- Voz ----------
+  function hablar(texto) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(texto).slice(0, 1500));
+      u.lang = 'es-AR';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* sin voz disponible */ }
+  }
+
+  // ---------- Formulario ----------
+  function prepararFormulario() {
+    var sel = $('in-servicio');
+    CLAVES.forEach(function (k) { var o = el('option', null, SERVICIOS[k].largo); o.value = k; sel.appendChild(o); });
+    var mes = $('in-mes');
+    MESES.forEach(function (m, i) { var o = el('option', null, m.charAt(0).toUpperCase() + m.slice(1)); o.value = String(i + 1).padStart(2, '0'); mes.appendChild(o); });
+    var anio = $('in-anio');
+    var actual = new Date().getFullYear();
+    for (var a = actual + 1; a >= actual - 4; a--) { var o = el('option', null, String(a)); o.value = String(a); anio.appendChild(o); }
+    sel.addEventListener('change', actualizarConsumo);
+    $('in-monto').addEventListener('input', function () {
+      var n = parseNumeroAR(this.value);
+      $('prev-monto').textContent = this.value.trim() === '' ? '' : (Number.isFinite(n) && n > 0 ? 'Se va a guardar como ' + pesos(n) : 'Revisá el número');
+    });
+  }
+  function actualizarConsumo() {
+    var s = SERVICIOS[$('in-servicio').value];
+    $('bloque-consumo').classList.toggle('oculto', !s.conConsumo);
+    $('lbl-consumo').textContent = 'Consumo (' + s.unidad + ')';
+  }
+  function abrirCarga() {
+    var f = $('form-boleta');
+    f.reset();
+    var hoy = new Date();
+    $('in-servicio').value = servicioVista;
+    $('in-mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
+    $('in-anio').value = String(hoy.getFullYear());
+    $('prev-monto').textContent = '';
+    $('error-form').textContent = '';
+    actualizarConsumo();
+    $('dlg-carga').showModal();
+    $('in-monto').focus();
+  }
+  function enviarFormulario(e) {
+    e.preventDefault();
+    var err = $('error-form');
+    err.textContent = '';
+    if (!db) { err.textContent = 'El almacenamiento no está disponible.'; return; }
+    var servicio = $('in-servicio').value;
+    var monto = parseNumeroAR($('in-monto').value);
+    if (!Number.isFinite(monto) || monto <= 0 || monto > MONTO_MAX) {
+      err.textContent = 'Escribí el total a pagar, por ejemplo 35.174,50';
+      $('in-monto').focus();
+      return;
+    }
+    var consumo = 0;
+    if (SERVICIOS[servicio] && SERVICIOS[servicio].conConsumo && $('in-consumo').value.trim() !== '') {
+      consumo = parseNumeroAR($('in-consumo').value);
+      if (!Number.isFinite(consumo) || consumo < 0 || consumo > CONSUMO_MAX) {
+        err.textContent = 'El consumo no es un número válido. Si no lo sabés, dejalo vacío.';
+        $('in-consumo').focus();
+        return;
+      }
+    }
+    var reg = validarRegistro({
+      servicio: servicio,
+      periodo: $('in-anio').value + '-' + $('in-mes').value,
+      monto: monto,
+      consumo: consumo,
+      esEstimado: $('in-estimado').checked,
+      fecha: new Date().toISOString()
+    });
+    if (!reg) { err.textContent = 'Revisá los datos ingresados.'; return; }
+
+    var repetida = registros.some(function (r) { return r.servicio === reg.servicio && r.periodo === reg.periodo; });
+    if (repetida && !window.confirm('Ya hay una boleta de ' + SERVICIOS[reg.servicio].nombre + ' de ' + periodoTexto(reg.periodo) + '. ¿Guardarla igual?')) return;
+
+    agregar([reg]).then(function (ids) {
+      ultimoId = ids[0];
+      servicioVista = reg.servicio;
+      $('dlg-carga').close();
+      return recargar();
+    }).then(function () {
+      $('tit-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }).catch(function () { err.textContent = 'No se pudo guardar. Probá de nuevo.'; });
+  }
+
+  // ---------- Copia de seguridad ----------
+  function exportar() {
+    if (!registros.length) { window.alert('Todavía no hay boletas para guardar.'); return; }
+    var datos = registros.map(function (r) {
+      return { servicio: r.servicio, periodo: r.periodo, monto: r.monto, consumo: r.consumo, esEstimado: r.esEstimado, fecha: r.fecha };
+    });
+    var blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'CuentasClaras_copia_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importar(e) {
+    var input = e.target;
+    var file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (!db) { window.alert('El almacenamiento no está disponible.'); return; }
+    if (file.size > MAX_ARCHIVO) { window.alert('El archivo es demasiado grande para ser una copia de Cuentas Claras.'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var datos;
+      try { datos = JSON.parse(String(reader.result)); } catch (err) { window.alert('El archivo no es una copia válida de Cuentas Claras.'); return; }
+      if (!Array.isArray(datos)) { window.alert('El archivo no es una copia válida de Cuentas Claras.'); return; }
+      if (datos.length > MAX_REGISTROS) { window.alert('El archivo tiene demasiados registros.'); return; }
+      var validos = [], descartados = 0, repetidos = 0;
+      var existentes = {};
+      registros.forEach(function (r) { existentes[r.servicio + '|' + r.periodo + '|' + r.monto] = true; });
+      datos.forEach(function (d) {
+        var v = validarRegistro(d);
+        if (!v) { descartados++; return; }
+        var k = v.servicio + '|' + v.periodo + '|' + v.monto;
+        if (existentes[k]) { repetidos++; return; }
+        existentes[k] = true;
+        validos.push(v);
+      });
+      if (!validos.length) {
+        window.alert('No hay boletas nuevas para agregar.' + (descartados ? ' Se ignoraron ' + descartados + ' registros con datos inválidos.' : ''));
+        return;
+      }
+      var msg = 'Se van a agregar ' + validos.length + ' boletas.';
+      if (repetidos) msg += '\n' + repetidos + ' ya estaban cargadas y se omiten.';
+      if (descartados) msg += '\n' + descartados + ' registros tienen datos inválidos y se ignoran.';
+      if (!window.confirm(msg + '\n\n¿Continuar?')) return;
+      agregar(validos).then(recargar).then(function () { window.alert('Copia recuperada.'); })
+        .catch(function () { window.alert('No se pudo recuperar la copia.'); });
+    };
+    reader.onerror = function () { window.alert('No se pudo leer el archivo.'); };
+    reader.readAsText(file);
+  }
+
+  // ---------- Aviso legal ----------
+  function avisoAceptado() { try { return localStorage.getItem(CLAVE_AVISO) === 'true'; } catch (e) { return false; } }
+  function prepararAviso() {
+    var dlg = $('dlg-aviso');
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); });
+    $('chk-aviso').addEventListener('change', function () { $('btn-aceptar-aviso').disabled = !this.checked; });
+    $('btn-aceptar-aviso').addEventListener('click', function () {
+      try { localStorage.setItem(CLAVE_AVISO, 'true'); } catch (e) { /* modo privado */ }
+      dlg.close();
+    });
+    if (!avisoAceptado()) dlg.showModal();
+  }
+
+  // ---------- Inicio ----------
+  function iniciar() {
+    prepararFormulario();
+    $('btn-cargar').addEventListener('click', abrirCarga);
+    $('btn-cancelar').addEventListener('click', function () { $('dlg-carga').close(); });
+    $('form-boleta').addEventListener('submit', enviarFormulario);
+    $('btn-exportar').addEventListener('click', exportar);
+    $('btn-importar').addEventListener('click', function () { $('input-importar').click(); });
+    $('input-importar').addEventListener('change', importar);
+    $('btn-instrucciones').addEventListener('click', function () {
+      hablar('Bienvenido a Cuentas Claras. Tocá el botón azul que dice Cargar boleta, elegí el servicio, el mes y escribí el total a pagar. La aplicación te dice si la boleta está en orden o si conviene revisarla.');
+    });
+    renderTodo();
+    prepararAviso();
+    abrirDB().then(function (d) { db = d; return recargar(); }).catch(function () {
+      mostrarError('No se pudo abrir el almacenamiento del navegador. Si estás en modo incógnito, abrí la aplicación en una ventana normal.');
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+})();
+</script>
+</body>
+</html>
