@@ -1,0 +1,17 @@
+{
+  "name": "Cuentas Claras",
+  "short_name": "Cuentas Claras",
+  "description": "Control sencillo de boletas de luz, gas, agua e impuestos.",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f8fd",
+  "theme_color": "#74acdf",
+  "icons": [
+    { "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

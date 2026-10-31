@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-jCRSBD9DMk44QpzHKsBIeoeFiWk19RWwpkTOtEd0RTE='; worker-src 'self'; connect-src 'self'; manifest-src 'self'; style-src 'sha256-/CjXkl631hhrymRZvwpRBUpmu1B3DUBeXuC1cyuE2Dk='; img-src 'self' data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#74acdf">
+<meta name="description" content="Cuentas Claras: control sencillo de boletas de luz, gas, agua e impuestos.">
+<title>Cuentas Claras</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23f6b40e'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%230b2540' font-family='sans-serif' font-weight='bold'%3E$%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cuentas Claras">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{
+  /* Paleta inspirada en la bandera: celeste, blanco y el Sol de Mayo */
+  --celeste:#74acdf;--celeste-claro:#e8f3fc;--celeste-medio:#cfe5f7;--celeste-osc:#155a8a;
+  --sol:#f6b40e;--sol-claro:#fff4d6;--sol-osc:#7a5300;
+  --bg:#f2f8fd;--card:#ffffff;--text:#0b2540;--muted:#33506b;--border:#a9c7e3;
+  --primary:#1b6ca8;--primary-hover:#155a8a;--on-primary:#ffffff;
+  --ok:#166534;--ok-bg:#e3f6e8;--alerta:#7a4b00;--alerta-bg:#fff4d6;
+  --peligro:#9b1c1c;--peligro-bg:#fde8e8;--info:#155a8a;--info-bg:#e8f3fc;
+  --barra:#1b6ca8;--barra-est:#c98a00;--focus:#f6b40e;
+  --sombra:0 6px 18px rgba(11,37,64,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --celeste-claro:#12304d;--celeste-medio:#1a4268;--celeste-osc:#9fcbef;
+    --sol-claro:#3d2e05;--sol-osc:#ffd36b;
+    --bg:#0a1a2b;--card:#10263d;--text:#eef6fc;--muted:#c4dbef;--border:#3a6489;
+    --primary:#74acdf;--primary-hover:#9cc6ec;--on-primary:#0b2540;
+    --ok:#8ee0a4;--ok-bg:#123d24;--alerta:#ffd36b;--alerta-bg:#3d2e05;
+    --peligro:#ffb4b4;--peligro-bg:#4a1414;--info:#9fcbef;--info-bg:#12304d;
+    --barra:#74acdf;--barra-est:#f6b40e;--focus:#f6b40e;
+    --sombra:0 6px 18px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html{font-size:18px;scroll-behavior:smooth;scroll-padding-top:110px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%;padding-bottom:96px}
+button,input,select,summary{font:inherit;color:inherit}
+:focus-visible{outline:4px solid var(--focus);outline-offset:2px}
+.contenedor{max-width:640px;margin:0 auto;padding:16px}
+
+/* Cabecera con franja de la bandera */
+header{background:var(--card);position:sticky;top:0;z-index:5;box-shadow:var(--sombra)}
+.bandera{height:24px;background:
+  radial-gradient(circle at 50% 50%,var(--sol) 0 6px,#d99a00 6px 7px,transparent 7.5px),
+  linear-gradient(#74acdf 0 33.3%,#ffffff 33.3% 66.6%,#74acdf 66.6%)}
+.cabecera{max-width:640px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:center;gap:12px}
+.logo{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#ffd75e 0 55%,var(--sol) 56%);color:#0b2540;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;flex:none;box-shadow:0 0 0 4px var(--celeste-medio)}
+h1{font-size:1.5rem;margin:0;line-height:1.2;color:var(--celeste-osc)}
+.sub{margin:0;color:var(--muted);font-size:1rem}
+h2{font-size:1.3rem;margin:0 0 12px;color:var(--celeste-osc)}
+.tarjeta{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:18px;margin-bottom:20px;box-shadow:var(--sombra);animation:aparecer .4s ease-out both}
+
+/* Tarjeta principal celeste con botón dorado (el sol) */
+.cta{background:linear-gradient(160deg,var(--celeste) 0%,#9cc6ec 100%);border-color:var(--celeste);color:#0b2540}
+.cta h2{color:#0b2540;font-size:1.45rem}
+.cta p{margin:0 0 14px;font-size:1.1rem}
+.btn-sol{background:var(--sol);color:#0b2540;border-color:#d99a00;box-shadow:0 4px 0 #c98a00}
+.btn-sol:hover{background:#ffc531}
+.btn-sol:active{box-shadow:0 1px 0 #c98a00;transform:translateY(3px)}
+.cta .btn-secundario{background:rgba(255,255,255,.85);border-color:#ffffff;color:#0b2540}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:12px 20px;border-radius:16px;border:2px solid transparent;font-weight:700;font-size:1.1rem;cursor:pointer;text-align:center;transition:transform .12s ease,background-color .2s ease,box-shadow .12s ease}
+.btn:active{transform:scale(.97)}
+.btn-primario{background:var(--primary);color:var(--on-primary)}
+.btn-primario:hover{background:var(--primary-hover)}
+.btn-secundario{background:var(--card);border-color:var(--border);color:var(--text)}
+.btn-secundario:hover{background:var(--celeste-claro)}
+.btn-peligro{background:transparent;border-color:var(--peligro);color:var(--peligro);min-height:48px;padding:8px 14px;font-size:1rem}
+.btn-chico{min-height:48px;padding:8px 14px;font-size:1rem}
+.btn-pagada[aria-pressed="true"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ancho{width:100%}
+.btn-grande{font-size:1.3rem;min-height:72px}
+.btn-icono{min-width:56px;padding:8px 14px}
+.vacio{color:var(--muted);text-align:center;padding:12px 0;margin:0}
+
+/* Semáforo */
+.resultado{border:2px solid var(--border);border-left-width:12px;border-radius:16px;padding:16px;animation:aparecer .45s ease-out both}
+.resultado.info{border-color:var(--info);background:var(--info-bg)}
+.resultado.ok{border-color:var(--ok);background:var(--ok-bg)}
+.resultado.alerta{border-color:var(--alerta);background:var(--alerta-bg)}
+.resultado.peligro{border-color:var(--peligro);background:var(--peligro-bg);animation:aparecer .45s ease-out both,latido 1.6s ease-in-out .5s 2}
+.res-titulo{font-size:1.45rem;font-weight:800;margin:0}
+.info .res-titulo{color:var(--info)}.ok .res-titulo{color:var(--ok)}.alerta .res-titulo{color:var(--alerta)}.peligro .res-titulo{color:var(--peligro)}
+.res-sub{margin:4px 0 0;font-size:1.05rem}
+.res-monto{font-size:2.2rem;font-weight:800;margin:8px 0}
+.res-lista{margin:0 0 12px;padding-left:1.2rem}
+.res-lista li{margin-bottom:8px;font-size:1.1rem}
+.res-pie{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px}
+.res-pie small{font-size:.95rem}
+
+/* Bloque antifraude */
+.fraude{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+.fraude h3{margin:0 0 8px;font-size:1.15rem;color:var(--celeste-osc)}
+.fraude ul{list-style:none;margin:0;padding:0}
+.fraude li{display:flex;gap:10px;align-items:flex-start;padding:6px 0;font-size:1.05rem;border-top:1px dashed var(--border)}
+.fraude li:first-child{border-top:none}
+.fraude .ic{flex:none;font-size:1.2rem;line-height:1.4}
+.fraude li.peligro{color:var(--peligro);font-weight:700}
+.fraude li.alerta{color:var(--alerta)}
+.consejos{margin:0;padding-left:1.2rem}
+.consejos li{margin-bottom:8px;font-size:1.05rem}
+
+.selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.selector .btn{min-height:52px;font-size:1rem;padding:8px 14px;flex:1 1 auto;border-radius:999px}
+.selector .btn[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.grafico svg{width:100%;height:auto;display:block}
+.grafico .etq{fill:var(--text);font-size:13px}
+.grafico .val{fill:var(--text);font-size:12px;font-weight:700}
+.grafico .eje{stroke:var(--border);stroke-width:1}
+.grafico .barra{fill:var(--barra)}
+.grafico .barra-est{fill:var(--barra-est)}
+.grafico rect{transform-box:fill-box;transform-origin:bottom;animation:crecer .6s ease-out both}
+.leyenda{font-size:.95rem;color:var(--muted);margin:8px 0 0}
+.lista{list-style:none;margin:0;padding:0}
+.lista li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+.lista li:first-child{border-top:none}
+.lista .botones{display:flex;gap:8px}
+.lista .per{font-weight:700;font-size:1.1rem;margin:0}
+.lista .det{margin:0;color:var(--muted)}
+.etiqueta-est,.etiqueta-pagada{display:inline-block;border-radius:8px;padding:0 8px;font-size:.9rem;font-weight:700;margin-left:6px}
+.etiqueta-est{background:var(--alerta-bg);color:var(--alerta)}
+.etiqueta-pagada{background:var(--ok-bg);color:var(--ok)}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.campo{display:block;font-weight:700;font-size:1.05rem;margin:14px 0 6px}
+.ayuda{display:block;font-weight:400;color:var(--muted);font-size:.95rem}
+input[type=text],select{width:100%;min-height:56px;padding:10px 14px;border:2px solid var(--border);border-radius:12px;background:var(--bg);font-size:1.2rem;transition:border-color .2s ease,box-shadow .2s ease}
+input[type=text]:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--celeste-medio);outline:none}
+details.mas-datos{margin-top:16px;border:2px solid var(--border);border-radius:14px;padding:4px 14px 12px;background:var(--celeste-claro)}
+details.mas-datos summary{cursor:pointer;font-weight:700;font-size:1.05rem;min-height:48px;display:flex;align-items:center;color:var(--celeste-osc)}
+.chequeo{display:flex;gap:12px;align-items:flex-start;margin:16px 0;font-size:1.05rem;cursor:pointer}
+.chequeo input{width:28px;height:28px;flex:none;margin-top:2px;accent-color:var(--primary)}
+.vista-previa{margin:6px 0 0;font-weight:700;color:var(--primary);min-height:1.5em}
+.error{color:var(--peligro);font-weight:700;margin:10px 0 0;min-height:1.5em}
+.acciones{display:flex;gap:10px;margin-top:18px}
+.acciones .btn{flex:1}
+dialog{border:2px solid var(--border);border-radius:20px;background:var(--card);color:var(--text);padding:20px;width:min(560px,calc(100% - 24px));max-height:calc(100% - 24px);box-shadow:var(--sombra)}
+dialog[open]{animation:subir .25s ease-out both}
+dialog::backdrop{background:rgba(11,37,64,.65)}
+.aviso-texto{max-height:45vh;overflow-y:auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0;margin:12px 0}
+.aviso-texto p{margin:8px 0}
+.respaldo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.oculto{display:none!important}
+.mt{margin-top:10px}
+.ocr-preview{display:block;max-width:100%;max-height:35vh;margin:8px auto 12px;border-radius:12px;border:2px solid var(--border)}
+.ocr-estado{font-size:1.15rem;font-weight:700;text-align:center;margin:8px 0}
+progress{width:100%;height:22px;accent-color:var(--sol)}
+.aviso-ocr{background:var(--info-bg);color:var(--text);border:2px solid var(--info);border-radius:14px;padding:12px 14px;margin-bottom:6px;font-size:1.05rem}
+.aviso-ocr p{margin:4px 0}
+.aviso-ocr strong{color:var(--info)}
+.aviso-ocr .grave{color:var(--peligro);font-weight:800}
+.autocompletado{border-color:var(--sol)!important;box-shadow:0 0 0 4px var(--sol-claro)}
+.subtit{font-size:1.1rem;margin:18px 0 6px}
+.subtit:first-of-type{margin-top:4px}
+.pantalla-bloqueo{position:fixed;inset:0;z-index:100;background:linear-gradient(#74acdf 0 33.3%,var(--bg) 33.3% 66.6%,#74acdf 66.6%);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.bloqueo-caja{max-width:440px;width:100%;text-align:center;background:var(--card);border-radius:24px;padding:24px;box-shadow:var(--sombra)}
+.bloqueo-caja p{font-size:1.1rem}
+.logo-grande{width:96px;height:96px;font-size:3rem;margin:0 auto 12px}
+.banner-error{background:var(--peligro-bg);color:var(--peligro);border:2px solid var(--peligro);border-radius:12px;padding:12px;font-weight:700;margin-bottom:16px}
+
+/* Barra de navegación inferior */
+.nav-inferior{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:4px solid var(--celeste);box-shadow:0 -4px 14px rgba(11,37,64,.12);padding-bottom:env(safe-area-inset-bottom)}
+.nav-inferior ul{list-style:none;margin:0 auto;padding:6px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:640px}
+.nav-inferior button{width:100%;min-height:64px;border:0;background:transparent;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.85rem;font-weight:700;color:var(--celeste-osc);cursor:pointer;transition:background-color .2s ease,transform .12s ease}
+.nav-inferior button span{font-size:1.5rem;line-height:1}
+.nav-inferior button:active{transform:scale(.94)}
+.nav-inferior button:hover,.nav-inferior button.activo{background:var(--celeste-claro)}
+
+@keyframes aparecer{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes subir{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes crecer{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes latido{0%,100%{box-shadow:0 0 0 0 rgba(155,28,28,0)}50%{box-shadow:0 0 0 8px rgba(155,28,28,.25)}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+@media (max-width:420px){.fila,.respaldo{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="pantalla-bloqueo" class="pantalla-bloqueo oculto" role="dialog" aria-modal="true" aria-labelledby="tit-bloqueo">
+  <div class="bloqueo-caja">
+    <div class="logo logo-grande" aria-hidden="true">$</div>
+    <h2 id="tit-bloqueo">🔒 Cuentas Claras está bloqueada</h2>
+    <p>Usá tu huella, tu cara o el bloqueo de pantalla del teléfono para entrar.</p>
+    <button type="button" class="btn btn-primario btn-ancho btn-grande" id="btn-desbloquear">🔓 Desbloquear</button>
+    <p class="error" id="bloqueo-error" role="alert"></p>
+    <p class="sub">Si la huella no funciona, el teléfono te ofrece usar su PIN, patrón o contraseña. Si cambiás de teléfono, en el nuevo usá "Recuperar copia" con tu copia de seguridad.</p>
+  </div>
+</div>
+
+<header>
+  <div class="bandera" aria-hidden="true"></div>
+  <div class="cabecera">
+    <div class="marca">
+      <div class="logo" aria-hidden="true">$</div>
+      <div>
+        <h1>Cuentas Claras</h1>
+        <p class="sub">Control de boletas de servicios</p>
+      </div>
+    </div>
+    <button type="button" class="btn btn-secundario btn-icono" id="btn-instrucciones" aria-label="Escuchar instrucciones">🔊</button>
+  </div>
+</header>
+
+<main class="contenedor">
+  <div id="banner-error" class="banner-error oculto" role="alert"></div>
+
+  <section class="tarjeta cta" id="sec-cargar">
+    <h2>¿Llegó una boleta nueva?</h2>
+    <p>Sacale una foto: la aplicación reconoce el servicio, controla el código de pago y la compara con las anteriores.</p>
+    <button type="button" class="btn btn-sol btn-ancho btn-grande" id="btn-foto">📷 Sacar foto de la boleta</button>
+    <input type="file" id="input-foto" accept="image/*" class="oculto" tabindex="-1" aria-hidden="true">
+    <button type="button" class="btn btn-secundario btn-ancho mt" id="btn-cargar">✍️ Cargar los datos a mano</button>
+  </section>
+
+  <section class="tarjeta" id="sec-resultado" aria-labelledby="tit-resultado">
+    <h2 id="tit-resultado">Última boleta revisada</h2>
+    <div id="resultado" aria-live="polite">
+      <p class="vacio">Todavía no cargaste ninguna boleta.</p>
+    </div>
+  </section>
+
+  <section class="tarjeta" id="sec-historial" aria-labelledby="tit-historial">
+    <h2 id="tit-historial">Historial por servicio</h2>
+    <div class="selector" id="selector-servicio" role="group" aria-label="Elegir servicio"></div>
+    <div class="grafico" id="grafico"></div>
+    <p class="leyenda" id="leyenda-grafico"></p>
+    <ul class="lista" id="lista-boletas"></ul>
+  </section>
+
+  <section class="tarjeta" id="sec-cuidados" aria-labelledby="tit-cuidados">
+    <h2 id="tit-cuidados">🛡️ Cuidate de las boletas truchas</h2>
+    <p class="sub">Cada boleta que cargás pasa por un control antifraude: revisamos que el código de pago corresponda a tu cuenta y que no te pidan cosas raras.</p>
+    <ul class="consejos mt">
+      <li><strong>Antes de pagar, mirá el resultado del control.</strong> Si dice "No pagues todavía", consultá primero a la empresa.</li>
+      <li><strong>Las empresas no te piden transferir</strong> a un alias, CBU o CVU. Pagá por home banking eligiendo la empresa, en Rapipago o Pago Fácil, o en su web oficial.</li>
+      <li><strong>Nadie te va a pedir</strong> tu clave, token o los datos de tu tarjeta en una boleta.</li>
+      <li><strong>Desconfiá del apuro:</strong> "corte inmediato" o "último aviso" son frases típicas de estafa.</li>
+      <li>Para llamar a la empresa, usá el teléfono de <strong>una boleta anterior</strong> o de su web oficial, no el de la boleta dudosa.</li>
+      <li>Tocá <strong>"Pagada"</strong> en el historial cuando pagues: así la app detecta si te reclaman una deuda que ya saldaste.</li>
+    </ul>
+    <button type="button" class="btn btn-secundario btn-ancho mt" id="btn-escuchar-consejos">🔊 Escuchar los consejos</button>
+  </section>
+
+  <section class="tarjeta" id="sec-ajustes" aria-labelledby="tit-ajustes">
+    <h2 id="tit-ajustes">⚙️ Ajustes</h2>
+
+    <h3 class="subtit">📲 Tener la app en el teléfono</h3>
+    <p class="sub" id="instalar-texto">Podés instalarla como una aplicación más y abrirla aunque no tengas internet.</p>
+    <button type="button" class="btn btn-secundario btn-ancho oculto" id="btn-instalar">📲 Instalar en este teléfono</button>
+
+    <h3 class="subtit">🔒 Bloqueo con huella</h3>
+    <p class="sub" id="bloqueo-texto">Pide tu huella (o el bloqueo de pantalla del teléfono) cada vez que abrís la app.</p>
+    <button type="button" class="btn btn-secundario btn-ancho oculto" id="btn-bloqueo">Activar bloqueo con huella</button>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="tit-respaldo">
+    <h2 id="tit-respaldo">💾 Copia de seguridad</h2>
+    <p class="sub">Tus boletas se guardan solo en este dispositivo. Guardá una copia por si cambiás de teléfono o se borra el navegador.</p>
+    <div class="respaldo">
+      <button type="button" class="btn btn-secundario" id="btn-exportar">⬇️ Guardar copia</button>
+      <button type="button" class="btn btn-secundario" id="btn-importar">⬆️ Recuperar copia</button>
+      <input type="file" id="input-importar" accept=".json,application/json" class="oculto" tabindex="-1" aria-hidden="true">
+    </div>
+  </section>
+</main>
+
+<nav class="nav-inferior" aria-label="Secciones">
+  <ul>
+    <li><button type="button" data-ir="sec-cargar"><span aria-hidden="true">📷</span>Cargar</button></li>
+    <li><button type="button" data-ir="sec-historial"><span aria-hidden="true">📊</span>Historial</button></li>
+    <li><button type="button" data-ir="sec-cuidados"><span aria-hidden="true">🛡️</span>Cuidados</button></li>
+    <li><button type="button" data-ir="sec-ajustes"><span aria-hidden="true">⚙️</span>Ajustes</button></li>
+  </ul>
+</nav>
+
+<!-- AVISO INICIAL -->
+<dialog id="dlg-aviso" aria-labelledby="tit-aviso">
+  <h2 id="tit-aviso">⚠️ Aviso importante</h2>
+  <div class="aviso-texto">
+    <p><strong>Cuentas Claras</strong> es una herramienta orientativa para que lleves el control de tus boletas.</p>
+    <p><strong>No es asesoramiento legal ni contable.</strong> Las alertas no tienen validez como prueba ante empresas, entes reguladores ni la Justicia. Ante una duda, reclamá a la empresa o consultá a Defensa del Consumidor.</p>
+    <p><strong>Privacidad:</strong> tus datos quedan solamente en este dispositivo. La aplicación no envía información a ningún servidor.</p>
+    <p><strong>Fotos:</strong> la foto de la boleta se lee dentro de tu teléfono y no se guarda ni se envía a ningún lado. La lectura automática puede equivocarse: siempre revisá los datos antes de guardar.</p>
+  </div>
+  <label class="chequeo">
+    <input type="checkbox" id="chk-aviso">
+    <span>Leí el aviso y entiendo que la aplicación es solo orientativa.</span>
+  </label>
+  <button type="button" class="btn btn-primario btn-ancho" id="btn-aceptar-aviso" disabled>Entendido, continuar</button>
+</dialog>
+
+<!-- LECTURA DE FOTO -->
+<dialog id="dlg-ocr" aria-labelledby="tit-ocr">
+  <h2 id="tit-ocr">📷 Leyendo la boleta…</h2>
+  <img id="ocr-preview" class="ocr-preview" alt="Foto de la boleta">
+  <p id="ocr-estado" class="ocr-estado" aria-live="polite">Preparando…</p>
+  <progress id="ocr-progreso" max="100" value="0"></progress>
+  <p class="sub">Puede tardar hasta un minuto la primera vez. La foto no sale de tu teléfono.</p>
+  <div class="acciones">
+    <button type="button" class="btn btn-secundario" id="btn-ocr-cancelar">Cancelar</button>
+  </div>
+</dialog>
+
+<!-- CARGA DE BOLETA -->
+<dialog id="dlg-carga" aria-labelledby="tit-carga">
+  <h2 id="tit-carga">Nueva boleta</h2>
+  <div id="aviso-ocr" class="aviso-ocr oculto" role="status" tabindex="-1"></div>
+  <form id="form-boleta" novalidate>
+    <label class="campo" for="in-servicio">Servicio o impuesto</label>
+    <select id="in-servicio"></select>
+
+    <span class="campo" id="lbl-periodo">Mes de la boleta</span>
+    <div class="fila" role="group" aria-labelledby="lbl-periodo">
+      <select id="in-mes" aria-label="Mes"></select>
+      <select id="in-anio" aria-label="Año"></select>
+    </div>
+
+    <label class="campo" for="in-monto">Total a pagar ($)
+      <span class="ayuda">Escribilo como figura en la boleta, por ejemplo 35.174,50</span>
+    </label>
+    <input type="text" id="in-monto" inputmode="decimal" autocomplete="off" maxlength="20">
+    <p class="vista-previa" id="prev-monto" aria-live="polite"></p>
+
+    <div id="bloque-consumo">
+      <label class="campo" for="in-consumo"><span id="lbl-consumo">Consumo</span>
+        <span class="ayuda">Opcional. Ayuda a saber si subió el uso o subió el precio.</span>
+      </label>
+      <input type="text" id="in-consumo" inputmode="decimal" autocomplete="off" maxlength="12">
+    </div>
+
+    <div id="bloque-tasas">
+      <label class="campo" for="in-tasas">Tasas municipales incluidas ($)
+        <span class="ayuda">Opcional. Renglones como "Tasa municipal", "Alumbrado público" o "Contribución municipal".</span>
+      </label>
+      <input type="text" id="in-tasas" inputmode="decimal" autocomplete="off" maxlength="20">
+    </div>
+
+    <label class="chequeo">
+      <input type="checkbox" id="in-estimado">
+      <span>La boleta dice <strong>"lectura estimada"</strong></span>
+    </label>
+
+    <details class="mas-datos" id="mas-datos">
+      <summary>🛡️ Datos para el control antifraude (opcional)</summary>
+      <label class="campo" for="in-cliente">Número de cliente o de cuenta</label>
+      <input type="text" id="in-cliente" inputmode="numeric" autocomplete="off" maxlength="24">
+      <label class="campo" for="in-medidor">Número de medidor</label>
+      <input type="text" id="in-medidor" autocomplete="off" maxlength="24">
+      <label class="campo" for="in-codigo">Código de pago
+        <span class="ayuda">Los números que están debajo del código de barras.</span>
+      </label>
+      <input type="text" id="in-codigo" inputmode="numeric" autocomplete="off" maxlength="120">
+      <label class="campo" for="in-deuda">Deuda o saldo anterior ($)
+        <span class="ayuda">Solo si la boleta dice que debés algo de antes.</span>
+      </label>
+      <input type="text" id="in-deuda" inputmode="decimal" autocomplete="off" maxlength="20">
+    </details>
+
+    <p class="error" id="error-form" role="alert"></p>
+
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario" id="btn-cancelar">Cancelar</button>
+      <button type="submit" class="btn btn-primario">Guardar y revisar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+'use strict';
+(function () {
+  // ---------- Configuración ----------
+  var SERVICIOS = {
+    Electricidad: { nombre: 'Luz', largo: 'Luz (Edenor / Edesur / provincial)', unidad: 'kWh', conConsumo: true },
+    Gas:          { nombre: 'Gas', largo: 'Gas (Metrogas / Naturgy / Camuzzi)', unidad: 'm³', conConsumo: true },
+    Agua:         { nombre: 'Agua', largo: 'Agua (AySA / ABSA)', unidad: 'm³', conConsumo: true },
+    Municipal:    { nombre: 'Municipal', largo: 'Tasa municipal / ABL', unidad: '', conConsumo: false },
+    Provincial:   { nombre: 'Provincial', largo: 'Impuesto provincial (ARBA / AGIP)', unidad: '', conConsumo: false }
+  };
+  var CLAVES = Object.keys(SERVICIOS);
+  var UMBRAL_ROJO = 35;
+  var UMBRAL_AMARILLO = 15;
+  var MONTO_MAX = 1e10;
+  var CONSUMO_MAX = 1e7;
+  var MAX_ARCHIVO = 1024 * 1024;
+  var MAX_REGISTROS = 2000;
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var CLAVE_AVISO = 'cuentas_claras_legal_accepted';
+  var SENALES = ['transferencia', 'presion', 'datos'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmtPesos = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var fmtNum = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 });
+
+  var db = null;
+  var registros = [];
+  var servicioVista = CLAVES[0];
+  var ultimoId = null;
+
+  // ---------- Utilidades ----------
+  function tieneClave(obj, k) { return Object.prototype.hasOwnProperty.call(obj, k); }
+  function pesos(n) { return fmtPesos.format(n); }
+  function pct(nuevo, viejo) { return ((nuevo - viejo) / viejo) * 100; }
+  function pctTexto(v) { return Math.round(Math.abs(v)) + '%'; }
+  function periodoTexto(p) { var x = p.split('-'); return MESES[+x[1] - 1] + ' ' + x[0]; }
+  function periodoCorto(p) { var x = p.split('-'); return MESES[+x[1] - 1].slice(0, 3) + ' ' + x[0].slice(2); }
+  function mesesEntre(a, b) {
+    var x = a.split('-'), y = b.split('-');
+    return (+y[0] * 12 + +y[1]) - (+x[0] * 12 + +x[1]);
+  }
+  function compacto(n) {
+    if (n >= 1e6) return '$' + fmtNum.format(Math.round(n / 1e5) / 10) + ' M';
+    if (n >= 1e3) return '$' + fmtNum.format(Math.round(n / 1e3)) + ' mil';
+    return '$' + fmtNum.format(Math.round(n));
+  }
+  function el(tag, clase, texto) {
+    var e = document.createElement(tag);
+    if (clase) e.className = clase;
+    if (texto !== undefined && texto !== null) e.textContent = texto;
+    return e;
+  }
+  function vaciar(nodo) { while (nodo.firstChild) nodo.removeChild(nodo.firstChild); }
+  function mostrarError(msg) { var b = $('banner-error'); b.textContent = msg; b.classList.remove('oculto'); }
+
+  // Acepta formato argentino (35.174,50), con o sin $ y espacios.
+  function parseNumeroAR(txt) {
+    if (typeof txt !== 'string') return NaN;
+    var s = txt.replace(/[$\s]/g, '');
+    if (!s || !/^[0-9.,]+$/.test(s)) return NaN;
+    var punto = s.indexOf('.') !== -1, coma = s.indexOf(',') !== -1;
+    if (punto && coma) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+      else s = s.replace(/,/g, '');
+    } else if (coma) {
+      if (/^\d{1,3}(,\d{3})+$/.test(s)) s = s.replace(/,/g, '');
+      else if ((s.match(/,/g) || []).length > 1) return NaN;
+      else s = s.replace(',', '.');
+    } else if (punto) {
+      if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+      else if ((s.match(/\./g) || []).length > 1) return NaN;
+    }
+    var n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  // Valida y limpia cualquier registro (de la base o de un archivo importado).
+  // Devuelve un objeto nuevo solo con campos conocidos, o null si no es válido.
+  function validarRegistro(r) {
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+    if (typeof r.servicio !== 'string' || !tieneClave(SERVICIOS, r.servicio)) return null;
+    if (typeof r.monto !== 'number' || !Number.isFinite(r.monto) || r.monto <= 0 || r.monto > MONTO_MAX) return null;
+    var consumo = 0;
+    if (r.consumo !== undefined && r.consumo !== null) {
+      if (typeof r.consumo !== 'number' || !Number.isFinite(r.consumo) || r.consumo < 0 || r.consumo > CONSUMO_MAX) return null;
+      consumo = r.consumo;
+    }
+    var tasas = 0;
+    if (r.tasas !== undefined && r.tasas !== null) {
+      if (typeof r.tasas !== 'number' || !Number.isFinite(r.tasas) || r.tasas < 0 || r.tasas > r.monto) return null;
+      tasas = Math.round(r.tasas * 100) / 100;
+    }
+    var cliente = '', medidor = '', codigo = '', deuda = 0, senales = [];
+    if (r.cliente !== undefined && r.cliente !== null && r.cliente !== '') {
+      if (typeof r.cliente !== 'string' || !/^\d{4,20}$/.test(r.cliente)) return null;
+      cliente = r.cliente;
+    }
+    if (r.medidor !== undefined && r.medidor !== null && r.medidor !== '') {
+      if (typeof r.medidor !== 'string' || !/^[A-Z0-9-]{3,20}$/.test(r.medidor)) return null;
+      medidor = r.medidor;
+    }
+    if (r.codigo !== undefined && r.codigo !== null && r.codigo !== '') {
+      if (typeof r.codigo !== 'string' || !/^\d{20,100}$/.test(r.codigo)) return null;
+      codigo = r.codigo;
+    }
+    if (r.deuda !== undefined && r.deuda !== null) {
+      if (typeof r.deuda !== 'number' || !Number.isFinite(r.deuda) || r.deuda < 0 || r.deuda > MONTO_MAX) return null;
+      deuda = Math.round(r.deuda * 100) / 100;
+    }
+    if (r.senales !== undefined && r.senales !== null) {
+      if (!Array.isArray(r.senales) || r.senales.length > SENALES.length) return null;
+      for (var si = 0; si < r.senales.length; si++) {
+        if (SENALES.indexOf(r.senales[si]) === -1) return null;
+        if (senales.indexOf(r.senales[si]) === -1) senales.push(r.senales[si]);
+      }
+    }
+    var fecha = new Date(typeof r.fecha === 'string' ? r.fecha : NaN);
+    var fechaOk = !isNaN(fecha.getTime());
+    var periodo = null;
+    if (typeof r.periodo === 'string' && /^(20\d\d)-(0[1-9]|1[0-2])$/.test(r.periodo)) {
+      periodo = r.periodo;
+    } else if (fechaOk) {
+      // Registros de la versión anterior: se toma el mes en que se cargaron.
+      periodo = fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0');
+    }
+    if (!periodo) return null;
+    return {
+      servicio: r.servicio,
+      periodo: periodo,
+      monto: Math.round(r.monto * 100) / 100,
+      consumo: consumo,
+      tasas: tasas,
+      esEstimado: r.esEstimado === true,
+      cliente: cliente,
+      medidor: medidor,
+      codigo: codigo,
+      deuda: deuda,
+      senales: senales,
+      pagada: r.pagada === true,
+      fecha: fechaOk ? fecha.toISOString() : new Date().toISOString()
+    };
+  }
+
+  // ---------- Base de datos local ----------
+  function abrirDB() {
+    return new Promise(function (resolve, reject) {
+      if (!('indexedDB' in window)) { reject(new Error('sin indexedDB')); return; }
+      var req = indexedDB.open('CuentasClarasDB', 1);
+      req.onupgradeneeded = function (e) {
+        var d = e.target.result;
+        if (!d.objectStoreNames.contains('boletas')) d.createObjectStore('boletas', { keyPath: 'id', autoIncrement: true });
+      };
+      req.onsuccess = function (e) { resolve(e.target.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function leerTodo() {
+    return new Promise(function (resolve, reject) {
+      var req = db.transaction('boletas', 'readonly').objectStore('boletas').getAll();
+      req.onsuccess = function () { resolve(req.result || []); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function agregar(lista) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('boletas', 'readwrite');
+      var store = tx.objectStore('boletas');
+      var ids = [];
+      lista.forEach(function (r) { store.add(r).onsuccess = function (e) { ids.push(e.target.result); }; });
+      tx.oncomplete = function () { resolve(ids); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }
+  function actualizar(id, cambios) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('boletas', 'readwrite');
+      var store = tx.objectStore('boletas');
+      var req = store.get(id);
+      req.onsuccess = function () {
+        var v = validarRegistro(req.result);
+        if (!v) return;
+        Object.keys(cambios).forEach(function (k) { v[k] = cambios[k]; });
+        v = validarRegistro(v);
+        if (!v) return;
+        v.id = id;
+        store.put(v);
+      };
+      tx.oncomplete = resolve;
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }
+  function borrar(id) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('boletas', 'readwrite');
+      tx.objectStore('boletas').delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = function () { reject(tx.error); };
+    });
+  }
+  function recargar() {
+    if (bloqueada) return Promise.resolve();
+    return leerTodo().then(function (crudos) {
+      registros = [];
+      crudos.forEach(function (c) {
+        var v = validarRegistro(c);
+        if (v && typeof c.id === 'number') { v.id = c.id; registros.push(v); }
+      });
+      if (ultimoId === null && registros.length) {
+        ultimoId = Math.max.apply(null, registros.map(function (r) { return r.id; }));
+      }
+      renderTodo();
+    });
+  }
+
+  // ---------- Motor de revisión (semáforo) ----------
+  var ORDEN = ['info', 'ok', 'alerta', 'peligro'];
+  var TITULOS = {
+    info: '🔵 Primera boleta registrada',
+    ok: '🟢 Boleta en orden',
+    alerta: '🟡 Conviene revisarla',
+    peligro: '🔴 Aumento importante'
+  };
+
+  function evaluar(reg, todos) {
+    var s = SERVICIOS[reg.servicio];
+    var previas = todos.filter(function (r) { return r.servicio === reg.servicio && r.periodo < reg.periodo; })
+                       .sort(function (a, b) { return a.periodo < b.periodo ? -1 : a.periodo > b.periodo ? 1 : a.id - b.id; });
+    var nivel = 'ok';
+    var msgs = [];
+    var aumentoFuerte = false;
+    function subir(n) { if (ORDEN.indexOf(n) > ORDEN.indexOf(nivel)) nivel = n; }
+
+    if (!previas.length) {
+      nivel = 'info';
+      msgs.push('No hay boletas anteriores de ' + s.nombre + ' para comparar. Queda guardada como referencia para las próximas.');
+    } else {
+      var ant = previas[previas.length - 1];
+      // Se compara sin la deuda arrastrada, para no confundir deuda con aumento.
+      var v = pct(sinDeuda(reg), sinDeuda(ant));
+      if (reg.deuda > 0 && reg.deuda < reg.monto) msgs.push('Comparamos sin contar la deuda anterior de ' + pesos(reg.deuda) + '.');
+      var refAnt = '(' + periodoTexto(ant.periodo) + ': ' + pesos(sinDeuda(ant)) + ')';
+      if (v > UMBRAL_ROJO) {
+        subir('peligro');
+        aumentoFuerte = true;
+        msgs.push('Subió ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '.');
+      } else if (v > UMBRAL_AMARILLO) {
+        subir('alerta');
+        msgs.push('Subió ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '.');
+      } else if (v < -UMBRAL_ROJO) {
+        subir('alerta');
+        msgs.push('Bajó ' + pctTexto(v) + ' respecto de la boleta anterior ' + refAnt + '. Si la lectura fue estimada, puede venir un ajuste más adelante.');
+      } else {
+        msgs.push('El monto es parecido al de la boleta anterior ' + refAnt + '.');
+      }
+
+      var gap = mesesEntre(ant.periodo, reg.periodo);
+      if (gap > 1) {
+        msgs.push('Entre la boleta anterior y esta pasaron ' + gap + ' meses. Si el servicio se cobra cada dos meses es normal; si no, falta alguna boleta y la comparación es aproximada.');
+      }
+
+      if (s.conConsumo && reg.consumo > 0 && ant.consumo > 0 && v > UMBRAL_AMARILLO) {
+        var vc = pct(reg.consumo, ant.consumo);
+        var det = fmtNum.format(ant.consumo) + ' a ' + fmtNum.format(reg.consumo) + ' ' + s.unidad;
+        if (vc >= v * 0.6) {
+          msgs.push('El consumo también subió (de ' + det + '). Gran parte del aumento se explica por mayor uso.');
+        } else {
+          msgs.push('El consumo casi no cambió (de ' + det + '). El aumento viene del precio, cargos o impuestos: conviene revisar el detalle de la boleta.');
+        }
+      }
+
+      if (previas.length >= 3) {
+        var ult = previas.slice(-6);
+        var prom = ult.reduce(function (a, r) { return a + sinDeuda(r); }, 0) / ult.length;
+        var vp = pct(sinDeuda(reg), prom);
+        if (vp > UMBRAL_ROJO && v <= UMBRAL_ROJO) {
+          subir('alerta');
+          msgs.push('Está ' + pctTexto(vp) + ' por encima del promedio de tus últimas ' + ult.length + ' boletas (' + pesos(prom) + ').');
+        }
+      }
+
+      if (reg.tasas > 0 && ant.tasas > 0) {
+        var vt = pct(reg.tasas, ant.tasas);
+        if (vt > UMBRAL_ROJO) {
+          subir('alerta');
+          msgs.push('Las tasas municipales subieron ' + pctTexto(vt) + ' respecto de la boleta anterior (antes ' + pesos(ant.tasas) + ').');
+        }
+      }
+    }
+
+    if (reg.tasas > 0) {
+      msgs.push('Incluye ' + pesos(reg.tasas) + ' en tasas o cargos municipales (' + pctTexto(reg.tasas / reg.monto * 100) +
+        ' del total). No son consumo de ' + s.nombre.toLowerCase() + '. Si querés saber si corresponde cobrarlos en la boleta en tu municipio, podés consultar en Defensa del Consumidor.');
+    }
+
+    if (reg.esEstimado) {
+      var seguidas = 1;
+      for (var q = previas.length - 1; q >= 0 && previas[q].esEstimado; q--) seguidas++;
+      if (seguidas >= 2) {
+        subir('peligro');
+        msgs.push('Van ' + seguidas + ' boletas seguidas con "lectura estimada": la empresa no lee el medidor hace tiempo. Pedí a la empresa que lo lean, o informá vos la lectura, para evitar un ajuste grande cuando lo lean.');
+      } else {
+        subir('alerta');
+        msgs.push('Dice "lectura estimada": la empresa no leyó el medidor. Anotá la lectura real de tu medidor para controlar que no te cobren de más en la próxima.');
+      }
+    }
+
+    var duplicadas = todos.filter(function (r) { return r.id !== reg.id && r.servicio === reg.servicio && r.periodo === reg.periodo; });
+    if (duplicadas.length) {
+      subir('alerta');
+      msgs.push('Hay otra boleta de ' + s.nombre + ' cargada para ' + periodoTexto(reg.periodo) + '. Si es un error, borrá la repetida en el historial.');
+    }
+
+    var fraude = evaluarFraude(reg, previas);
+    var titulo;
+    if (fraude.nivel === 'peligro') {
+      nivel = 'peligro';
+      titulo = '⛔ No pagues todavía';
+    } else {
+      if (fraude.nivel === 'alerta') subir('alerta');
+      titulo = (nivel === 'peligro' && !aumentoFuerte) ? '🔴 Pedí la lectura del medidor' : TITULOS[nivel];
+    }
+    return { nivel: nivel, titulo: titulo, msgs: msgs, fraude: fraude };
+  }
+
+  function sinDeuda(r) { return (r.deuda > 0 && r.deuda < r.monto) ? r.monto - r.deuda : r.monto; }
+  function sinCeros(s) { return (s || '').replace(/^0+/, ''); }
+
+  // Controles antifraude. Compara la boleta consigo misma y con las boletas anteriores del mismo servicio.
+  function evaluarFraude(reg, previas) {
+    var items = [];
+    var nivel = 'ok';
+    function agregarItem(estado, texto) {
+      items.push({ estado: estado, texto: texto });
+      if (estado === 'peligro' || (estado === 'alerta' && nivel !== 'peligro')) nivel = estado;
+    }
+    var conCodigo = previas.filter(function (r) { return r.codigo; });
+
+    if (reg.codigo) {
+      // 1. El código de pago corresponde a la cuenta y al importe
+      var cli = sinCeros(reg.cliente);
+      if (cli.length >= 4) {
+        if (reg.codigo.indexOf(cli) !== -1) {
+          agregarItem('ok', 'El código de pago corresponde a tu número de cliente.');
+        } else {
+          var antesTeniaCliente = conCodigo.some(function (r) { var c = sinCeros(r.cliente); return c.length >= 4 && r.codigo.indexOf(c) !== -1; });
+          if (antesTeniaCliente) agregarItem('peligro', 'El código de pago NO contiene tu número de cliente, y en tus boletas anteriores sí. Podrías estar pagando la cuenta de otra persona.');
+          else agregarItem('alerta', 'No encontramos tu número de cliente dentro del código de pago. Algunas empresas no lo incluyen: si es la primera vez, verificá con la empresa antes de pagar.');
+        }
+      }
+      var montoCod = String(Math.round(reg.monto * 100));
+      if (reg.codigo.indexOf(montoCod) !== -1) {
+        agregarItem('ok', 'El importe dentro del código coincide con el total de la boleta.');
+      } else {
+        var antesTeniaMonto = conCodigo.some(function (r) { return r.codigo.indexOf(String(Math.round(r.monto * 100))) !== -1; });
+        if (antesTeniaMonto) agregarItem('peligro', 'El importe dentro del código no coincide con el total de la boleta, y en tus boletas anteriores sí coincidía.');
+        else agregarItem('alerta', 'No encontramos el total dentro del código de pago. Si es la primera boleta de este servicio, verificá antes de pagar.');
+      }
+      // 2. Huella de la empresa cobradora
+      if (conCodigo.length) {
+        var pref = reg.codigo.slice(0, 4);
+        var prefAnt = conCodigo.map(function (r) { return r.codigo.slice(0, 4); });
+        if (prefAnt.indexOf(pref) === -1) {
+          agregarItem('peligro', 'El código empieza distinto que en tus boletas anteriores de este servicio (antes ' + prefAnt[prefAnt.length - 1] + '…, ahora ' + pref + '…). Podría cobrarlo otra empresa.');
+        } else {
+          agregarItem('ok', 'El código identifica a la misma empresa que tus boletas anteriores.');
+          if (!conCodigo.some(function (r) { return r.codigo.length === reg.codigo.length; })) {
+            agregarItem('alerta', 'El código de pago tiene un largo distinto al de tus boletas anteriores.');
+          }
+        }
+      }
+    } else {
+      agregarItem('nada', 'No se cargó el código de pago, así que no pudimos controlarlo.');
+    }
+
+    // 3. Datos que no deberían cambiar
+    if (reg.cliente) {
+      var antCli = previas.filter(function (r) { return r.cliente; }).pop();
+      if (antCli && sinCeros(antCli.cliente) !== sinCeros(reg.cliente)) {
+        agregarItem('peligro', 'Cambió el número de cliente: antes ' + antCli.cliente + ', ahora ' + reg.cliente + '. Si no hiciste ningún trámite, no pagues y consultá a la empresa.');
+      }
+    }
+    if (reg.medidor) {
+      var antMed = previas.filter(function (r) { return r.medidor; }).pop();
+      if (antMed && antMed.medidor !== reg.medidor) {
+        agregarItem('alerta', 'Cambió el número de medidor: antes ' + antMed.medidor + ', ahora ' + reg.medidor + '. Puede ser un cambio de medidor; si no te avisaron, consultá.');
+      }
+    }
+
+    // 5 y 6. Señales en el texto de la boleta
+    if (reg.senales.indexOf('transferencia') !== -1) {
+      agregarItem('peligro', 'La boleta pide transferir a un alias, CBU o CVU. Las empresas de servicios normalmente no cobran así: pagá por home banking eligiendo la empresa, en Rapipago o Pago Fácil, o en su web oficial.');
+    }
+    if (reg.senales.indexOf('datos') !== -1) {
+      agregarItem('peligro', 'La boleta pide una clave, token o datos de tarjeta. Ninguna empresa te los pide en una boleta: no los des.');
+    }
+    if (reg.senales.indexOf('presion') !== -1) {
+      agregarItem('alerta', 'La boleta usa frases de apuro, como "corte inmediato" o "último aviso". Es una táctica común de estafa: no te apures y verificá con la empresa.');
+    }
+
+    // 8. Deuda que no debería existir
+    if (reg.deuda > 0) {
+      var ant = previas[previas.length - 1];
+      if (ant && ant.pagada) {
+        agregarItem('peligro', 'La boleta dice que debés ' + pesos(reg.deuda) + ' de antes, pero marcaste como pagada la de ' + periodoTexto(ant.periodo) + '. Si tenés el comprobante, reclamá a la empresa antes de volver a pagar.');
+      } else {
+        agregarItem('alerta', 'Incluye una deuda anterior de ' + pesos(reg.deuda) + '. Si ya la pagaste, buscá el comprobante antes de pagar de nuevo.');
+      }
+    }
+
+    if (items.every(function (i) { return i.estado === 'nada'; })) nivel = 'nada';
+    return { nivel: nivel, items: items };
+  }
+
+  // ---------- Pantalla ----------
+  function renderResultado() {
+    var cont = $('resultado');
+    vaciar(cont);
+    var reg = registros.filter(function (r) { return r.id === ultimoId; })[0];
+    if (!reg) { cont.appendChild(el('p', 'vacio', 'Todavía no cargaste ninguna boleta.')); return; }
+    var ev = evaluar(reg, registros);
+    var t = el('div', 'resultado ' + ev.nivel);
+    t.appendChild(el('p', 'res-titulo', ev.titulo));
+    t.appendChild(el('p', 'res-sub', SERVICIOS[reg.servicio].nombre + ' · ' + periodoTexto(reg.periodo)));
+    t.appendChild(el('p', 'res-monto', pesos(reg.monto)));
+    var ul = el('ul', 'res-lista');
+    ev.msgs.forEach(function (m) { ul.appendChild(el('li', null, m)); });
+    t.appendChild(ul);
+    var bf = el('div', 'fraude');
+    bf.appendChild(el('h3', null, '🛡️ Control antifraude'));
+    var uf = el('ul');
+    var ICONOS = { ok: '✅', alerta: '⚠️', peligro: '⛔', nada: 'ℹ️' };
+    ev.fraude.items.forEach(function (it) {
+      var li = el('li', it.estado);
+      li.appendChild(el('span', 'ic', ICONOS[it.estado] || 'ℹ️'));
+      li.appendChild(el('span', null, it.texto));
+      uf.appendChild(li);
+    });
+    bf.appendChild(uf);
+    t.appendChild(bf);
+    var pie = el('div', 'res-pie');
+    pie.appendChild(el('small', null, 'Aviso orientativo, sin validez legal.'));
+    var b = el('button', 'btn btn-secundario', '🔊 Escuchar');
+    b.type = 'button';
+    b.addEventListener('click', function () {
+      var graves = ev.fraude.items.filter(function (i) { return i.estado === 'peligro' || i.estado === 'alerta'; }).map(function (i) { return i.texto; });
+      hablar(ev.titulo.replace(/^\S+\s/, '') + '. ' + SERVICIOS[reg.servicio].nombre + ', ' + periodoTexto(reg.periodo) + ', ' + pesos(reg.monto) + '. ' +
+        graves.join(' ') + ' ' + ev.msgs.join(' '));
+    });
+    pie.appendChild(b);
+    t.appendChild(pie);
+    cont.appendChild(t);
+  }
+
+  function renderSelector() {
+    var cont = $('selector-servicio');
+    vaciar(cont);
+    CLAVES.forEach(function (k) {
+      var b = el('button', 'btn btn-secundario', SERVICIOS[k].nombre);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(k === servicioVista));
+      b.addEventListener('click', function () { servicioVista = k; renderHistorial(); renderSelector(); });
+      cont.appendChild(b);
+    });
+  }
+
+  function renderHistorial() {
+    var datos = registros.filter(function (r) { return r.servicio === servicioVista; })
+                         .sort(function (a, b) { return a.periodo < b.periodo ? -1 : a.periodo > b.periodo ? 1 : a.id - b.id; });
+    renderGrafico(datos.slice(-12));
+    var lista = $('lista-boletas');
+    vaciar(lista);
+    if (!datos.length) {
+      lista.appendChild(el('li', 'vacio', 'No hay boletas de ' + SERVICIOS[servicioVista].nombre + ' cargadas.'));
+      return;
+    }
+    datos.slice().reverse().forEach(function (r) {
+      var li = el('li');
+      var info = el('div');
+      var per = el('p', 'per', periodoTexto(r.periodo));
+      if (r.esEstimado) per.appendChild(el('span', 'etiqueta-est', 'Estimada'));
+      if (r.pagada) per.appendChild(el('span', 'etiqueta-pagada', 'Pagada'));
+      info.appendChild(per);
+      var det = pesos(r.monto);
+      if (r.consumo > 0) det += ' · ' + fmtNum.format(r.consumo) + ' ' + SERVICIOS[r.servicio].unidad;
+      if (r.tasas > 0) det += ' · tasas ' + pesos(r.tasas);
+      info.appendChild(el('p', 'det', det));
+      li.appendChild(info);
+      var botones = el('div', 'botones');
+      var bp = el('button', 'btn btn-secundario btn-chico btn-pagada', r.pagada ? '✅ Pagada' : 'Marcar pagada');
+      bp.type = 'button';
+      bp.setAttribute('aria-pressed', String(r.pagada));
+      bp.setAttribute('aria-label', (r.pagada ? 'Desmarcar como pagada' : 'Marcar como pagada') + ' la boleta de ' + periodoTexto(r.periodo));
+      bp.addEventListener('click', function () {
+        actualizar(r.id, { pagada: !r.pagada }).then(recargar).catch(function () { mostrarError('No se pudo actualizar la boleta.'); });
+      });
+      botones.appendChild(bp);
+      var b = el('button', 'btn btn-peligro', 'Borrar');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Borrar boleta de ' + periodoTexto(r.periodo));
+      b.addEventListener('click', function () {
+        var ok = window.confirm('¿Borrar la boleta de ' + SERVICIOS[r.servicio].nombre + ' de ' + periodoTexto(r.periodo) + ' por ' + pesos(r.monto) + '?\n\nNo se puede deshacer.');
+        if (!ok) return;
+        borrar(r.id).then(function () {
+          if (ultimoId === r.id) ultimoId = null;
+          return recargar();
+        }).catch(function () { mostrarError('No se pudo borrar la boleta.'); });
+      });
+      botones.appendChild(b);
+      li.appendChild(botones);
+      lista.appendChild(li);
+    });
+  }
+
+  function renderGrafico(datos) {
+    var cont = $('grafico');
+    vaciar(cont);
+    var ley = $('leyenda-grafico');
+    if (datos.length < 2) {
+      ley.textContent = datos.length ? 'El gráfico aparece cuando haya al menos dos boletas de este servicio.' : '';
+      return;
+    }
+    var NS = 'http://www.w3.org/2000/svg';
+    var W = 360, H = 220, top = 24, bottom = 30, left = 6, right = 6;
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('role', 'img');
+    var max = Math.max.apply(null, datos.map(function (r) { return r.monto; }));
+    var ancho = (W - left - right) / datos.length;
+    var alto = H - top - bottom;
+    var resumen = [];
+    datos.forEach(function (r, i) {
+      var h = Math.max(2, (r.monto / max) * alto);
+      var x = left + i * ancho + ancho * 0.15;
+      var y = top + alto - h;
+      var rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', x.toFixed(1));
+      rect.setAttribute('y', y.toFixed(1));
+      rect.setAttribute('width', (ancho * 0.7).toFixed(1));
+      rect.setAttribute('height', h.toFixed(1));
+      rect.setAttribute('rx', '4');
+      rect.setAttribute('class', r.esEstimado ? 'barra-est' : 'barra');
+      svg.appendChild(rect);
+      if (datos.length <= 8) {
+        var tv = document.createElementNS(NS, 'text');
+        tv.setAttribute('x', (x + ancho * 0.35).toFixed(1));
+        tv.setAttribute('y', (y - 6).toFixed(1));
+        tv.setAttribute('text-anchor', 'middle');
+        tv.setAttribute('class', 'val');
+        tv.textContent = compacto(r.monto);
+        svg.appendChild(tv);
+      }
+      var te = document.createElementNS(NS, 'text');
+      te.setAttribute('x', (x + ancho * 0.35).toFixed(1));
+      te.setAttribute('y', String(H - 10));
+      te.setAttribute('text-anchor', 'middle');
+      te.setAttribute('class', 'etq');
+      te.textContent = periodoCorto(r.periodo);
+      svg.appendChild(te);
+      resumen.push(periodoTexto(r.periodo) + ': ' + pesos(r.monto));
+    });
+    var eje = document.createElementNS(NS, 'line');
+    eje.setAttribute('x1', '0'); eje.setAttribute('x2', String(W));
+    eje.setAttribute('y1', String(top + alto)); eje.setAttribute('y2', String(top + alto));
+    eje.setAttribute('class', 'eje');
+    svg.appendChild(eje);
+    svg.setAttribute('aria-label', 'Montos de ' + SERVICIOS[servicioVista].nombre + '. ' + resumen.join('; '));
+    cont.appendChild(svg);
+    ley.textContent = datos.some(function (r) { return r.esEstimado; })
+      ? 'Barras naranjas: boletas con lectura estimada.' : '';
+  }
+
+  function renderTodo() { renderResultado(); renderSelector(); renderHistorial(); }
+
+  // ---------- Voz ----------
+  function hablar(texto) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(texto).slice(0, 1500));
+      u.lang = 'es-AR';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* sin voz disponible */ }
+  }
+
+  // ---------- Formulario ----------
+  function prepararFormulario() {
+    var sel = $('in-servicio');
+    CLAVES.forEach(function (k) { var o = el('option', null, SERVICIOS[k].largo); o.value = k; sel.appendChild(o); });
+    var mes = $('in-mes');
+    MESES.forEach(function (m, i) { var o = el('option', null, m.charAt(0).toUpperCase() + m.slice(1)); o.value = String(i + 1).padStart(2, '0'); mes.appendChild(o); });
+    var anio = $('in-anio');
+    var actual = new Date().getFullYear();
+    for (var a = actual + 1; a >= actual - 4; a--) { var o = el('option', null, String(a)); o.value = String(a); anio.appendChild(o); }
+    sel.addEventListener('change', actualizarConsumo);
+    $('in-monto').addEventListener('input', function () {
+      var n = parseNumeroAR(this.value);
+      $('prev-monto').textContent = this.value.trim() === '' ? '' : (Number.isFinite(n) && n > 0 ? 'Se va a guardar como ' + pesos(n) : 'Revisá el número');
+    });
+  }
+  function actualizarConsumo() {
+    var s = SERVICIOS[$('in-servicio').value];
+    $('bloque-consumo').classList.toggle('oculto', !s.conConsumo);
+    $('bloque-tasas').classList.toggle('oculto', !s.conConsumo);
+    $('lbl-consumo').textContent = 'Consumo (' + s.unidad + ')';
+  }
+  var CAMPOS_AUTO = ['in-servicio', 'in-mes', 'in-anio', 'in-monto', 'in-consumo', 'in-tasas', 'in-cliente', 'in-medidor', 'in-codigo', 'in-deuda'];
+  var senalesFoto = [];
+  var fmtMontoInput = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // datos: null para carga manual, o el resultado de leer una foto.
+  function abrirCarga(datos) {
+    var f = $('form-boleta');
+    f.reset();
+    var hoy = new Date();
+    $('in-servicio').value = servicioVista;
+    $('in-mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
+    $('in-anio').value = String(hoy.getFullYear());
+    $('prev-monto').textContent = '';
+    $('error-form').textContent = '';
+    CAMPOS_AUTO.forEach(function (id) { $(id).classList.remove('autocompletado'); });
+    var aviso = $('aviso-ocr');
+    vaciar(aviso);
+    aviso.classList.add('oculto');
+    senalesFoto = [];
+    $('mas-datos').open = false;
+    if (datos) aplicarDatosFoto(datos);
+    actualizarConsumo();
+    $('dlg-carga').showModal();
+    if (datos) { $('dlg-carga').scrollTop = 0; aviso.focus(); }
+    else $('in-monto').focus();
+  }
+
+  function aplicarDatosFoto(d) {
+    var aviso = $('aviso-ocr');
+    function marcar(id) { $(id).classList.add('autocompletado'); }
+    function linea(texto, fuerte) {
+      var p = el('p');
+      if (fuerte) p.appendChild(el('strong', null, texto)); else p.textContent = texto;
+      aviso.appendChild(p);
+    }
+    if (d.error || d.sinTexto) {
+      linea('No pudimos leer la foto.', true);
+      linea('Probá de nuevo con buena luz, la boleta derecha y sin sombras, o completá los datos a mano.');
+      aviso.classList.remove('oculto');
+      return;
+    }
+    if (d.servicio) {
+      $('in-servicio').value = d.servicio; marcar('in-servicio');
+      linea(d.empresa
+        ? 'Reconocimos una boleta de ' + d.empresa + ' (' + SERVICIOS[d.servicio].nombre + ').'
+        : 'Parece una boleta de ' + SERVICIOS[d.servicio].nombre + '.', true);
+    } else {
+      linea('No pudimos reconocer la empresa. Elegí el servicio en la lista.', true);
+    }
+    if (d.periodo) {
+      var x = d.periodo.split('-');
+      if ($('in-anio').querySelector('option[value="' + x[0] + '"]')) {
+        $('in-anio').value = x[0]; $('in-mes').value = x[1];
+        marcar('in-mes'); marcar('in-anio');
+        if (d.periodoPor) linea('El mes se tomó de ' + d.periodoPor + '.');
+      }
+    }
+    if (d.monto) {
+      $('in-monto').value = fmtMontoInput.format(d.monto); marcar('in-monto');
+      $('in-monto').dispatchEvent(new Event('input'));
+    }
+    if (d.consumo && d.servicio && SERVICIOS[d.servicio].conConsumo) {
+      $('in-consumo').value = fmtNum.format(d.consumo); marcar('in-consumo');
+    }
+    if (d.tasas && d.servicio && SERVICIOS[d.servicio].conConsumo) {
+      $('in-tasas').value = fmtMontoInput.format(d.tasas); marcar('in-tasas');
+      linea('Encontramos tasas municipales por ' + pesos(d.tasas) + '.');
+    }
+    if (d.esEstimado) $('in-estimado').checked = true;
+    var abrirMas = false;
+    if (d.cliente) { $('in-cliente').value = d.cliente; marcar('in-cliente'); abrirMas = true; }
+    if (d.medidor) { $('in-medidor').value = d.medidor; marcar('in-medidor'); abrirMas = true; }
+    if (d.codigo) {
+      $('in-codigo').value = d.codigo; marcar('in-codigo'); abrirMas = true;
+      linea(d.codigoDesdeBarras ? 'Leímos el código de barras para controlarlo.' : 'Leímos los números del código de pago. Comparalos con la boleta.');
+    }
+    if (d.deuda) { $('in-deuda').value = fmtMontoInput.format(d.deuda); marcar('in-deuda'); abrirMas = true; }
+    if (abrirMas) $('mas-datos').open = true;
+    senalesFoto = Array.isArray(d.senales) ? d.senales.slice() : [];
+    if (senalesFoto.length) {
+      var pg = el('p', 'grave', '⛔ Ojo: esta boleta tiene señales de posible estafa. Vas a ver el detalle al guardar.');
+      aviso.insertBefore(pg, aviso.firstChild);
+    }
+    var faltan = [];
+    if (!d.monto) faltan.push('el total a pagar');
+    if (!d.periodo) faltan.push('el mes');
+    if (faltan.length) linea('No pudimos leer ' + faltan.join(' ni ') + ': completalo a mano.');
+    linea('Los datos marcados en amarillo se completaron solos. Revisalos con la boleta antes de guardar.');
+    aviso.classList.remove('oculto');
+  }
+  function enviarFormulario(e) {
+    e.preventDefault();
+    var err = $('error-form');
+    err.textContent = '';
+    if (!db) { err.textContent = 'El almacenamiento no está disponible.'; return; }
+    var servicio = $('in-servicio').value;
+    var monto = parseNumeroAR($('in-monto').value);
+    if (!Number.isFinite(monto) || monto <= 0 || monto > MONTO_MAX) {
+      err.textContent = 'Escribí el total a pagar, por ejemplo 35.174,50';
+      $('in-monto').focus();
+      return;
+    }
+    var consumo = 0;
+    if (SERVICIOS[servicio] && SERVICIOS[servicio].conConsumo && $('in-consumo').value.trim() !== '') {
+      consumo = parseNumeroAR($('in-consumo').value);
+      if (!Number.isFinite(consumo) || consumo < 0 || consumo > CONSUMO_MAX) {
+        err.textContent = 'El consumo no es un número válido. Si no lo sabés, dejalo vacío.';
+        $('in-consumo').focus();
+        return;
+      }
+    }
+    var tasas = 0;
+    if (SERVICIOS[servicio] && SERVICIOS[servicio].conConsumo && $('in-tasas').value.trim() !== '') {
+      tasas = parseNumeroAR($('in-tasas').value);
+      if (!Number.isFinite(tasas) || tasas < 0 || tasas > monto) {
+        err.textContent = 'Las tasas tienen que ser un número menor que el total. Si no las sabés, dejalo vacío.';
+        $('in-tasas').focus();
+        return;
+      }
+    }
+    var cliente = $('in-cliente').value.replace(/\D/g, '');
+    if (cliente && (cliente.length < 4 || cliente.length > 20)) {
+      err.textContent = 'El número de cliente no parece válido. Si no lo sabés, dejalo vacío.';
+      $('mas-datos').open = true; $('in-cliente').focus(); return;
+    }
+    var medidor = $('in-medidor').value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+    if (medidor && (medidor.length < 3 || medidor.length > 20)) {
+      err.textContent = 'El número de medidor no parece válido. Si no lo sabés, dejalo vacío.';
+      $('mas-datos').open = true; $('in-medidor').focus(); return;
+    }
+    var codigo = $('in-codigo').value.replace(/[\s.\-]/g, '');
+    if (codigo && !/^\d{20,100}$/.test(codigo)) {
+      err.textContent = 'El código de pago debe tener solo números (al menos 20). Si no lo sabés, dejalo vacío.';
+      $('mas-datos').open = true; $('in-codigo').focus(); return;
+    }
+    var deuda = 0;
+    if ($('in-deuda').value.trim() !== '') {
+      deuda = parseNumeroAR($('in-deuda').value);
+      if (!Number.isFinite(deuda) || deuda < 0 || deuda > MONTO_MAX) {
+        err.textContent = 'La deuda anterior no es un número válido. Si no hay, dejalo vacío.';
+        $('mas-datos').open = true; $('in-deuda').focus(); return;
+      }
+    }
+    var reg = validarRegistro({
+      cliente: cliente,
+      medidor: medidor,
+      codigo: codigo,
+      deuda: deuda,
+      senales: senalesFoto,
+      servicio: servicio,
+      periodo: $('in-anio').value + '-' + $('in-mes').value,
+      monto: monto,
+      consumo: consumo,
+      tasas: tasas,
+      esEstimado: $('in-estimado').checked,
+      fecha: new Date().toISOString()
+    });
+    if (!reg) { err.textContent = 'Revisá los datos ingresados.'; return; }
+
+    var repetida = registros.some(function (r) { return r.servicio === reg.servicio && r.periodo === reg.periodo; });
+    if (repetida && !window.confirm('Ya hay una boleta de ' + SERVICIOS[reg.servicio].nombre + ' de ' + periodoTexto(reg.periodo) + '. ¿Guardarla igual?')) return;
+
+    agregar([reg]).then(function (ids) {
+      ultimoId = ids[0];
+      servicioVista = reg.servicio;
+      $('dlg-carga').close();
+      return recargar();
+    }).then(function () {
+      $('tit-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }).catch(function () { err.textContent = 'No se pudo guardar. Probá de nuevo.'; });
+  }
+
+  // ---------- Lectura de la foto (OCR local, nada sale del dispositivo) ----------
+  var ocrWorker = null;
+  var ocrCancelado = false;
+  var ESTADOS_OCR = {
+    'loading tesseract core': 'Preparando el lector…',
+    'initializing tesseract': 'Preparando el lector…',
+    'loading language traineddata': 'Cargando el idioma español…',
+    'initializing api': 'Preparando el lector…',
+    'recognizing text': 'Leyendo el texto de la boleta…'
+  };
+  function rutaLocal(p) { return new URL(p, window.location.href).href; }
+  function cargarScriptOCR() {
+    return new Promise(function (resolve, reject) {
+      if (window.Tesseract) { resolve(); return; }
+      var s = document.createElement('script');
+      s.src = 'ocr/tesseract.min.js';
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('lector no disponible')); };
+      document.head.appendChild(s);
+    });
+  }
+  function progresoOCR(m) {
+    if (!m || ocrCancelado) return;
+    var t = ESTADOS_OCR[m.status];
+    if (t) $('ocr-estado').textContent = t;
+    if (m.status === 'recognizing text' && typeof m.progress === 'number') {
+      $('ocr-progreso').value = Math.round(m.progress * 100);
+    }
+  }
+  function obtenerLector() {
+    if (ocrWorker) return Promise.resolve(ocrWorker);
+    return cargarScriptOCR().then(function () {
+      return window.Tesseract.createWorker('spa', 1, {
+        workerPath: rutaLocal('ocr/worker.min.js'),
+        corePath: rutaLocal('ocr/core'),
+        langPath: rutaLocal('ocr/lang'),
+        workerBlobURL: false,
+        gzip: true,
+        logger: progresoOCR
+      });
+    }).then(function (w) { ocrWorker = w; return w; });
+  }
+
+  // Achica la foto, la pasa a grises y mejora el contraste para leer mejor.
+  function prepararImagen(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        // Las imágenes chicas (capturas, fotos de WhatsApp) se amplían para que la letra se lea mejor.
+        var ancho = img.naturalWidth, mayor = Math.max(img.naturalWidth, img.naturalHeight);
+        var esc = ancho < 1800 ? 1800 / ancho : Math.min(1, 3000 / mayor);
+        esc = Math.min(esc, 4200 / mayor);
+        var w = Math.max(1, Math.round(img.naturalWidth * esc));
+        var h = Math.max(1, Math.round(img.naturalHeight * esc));
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        var ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, w, h);
+        var datos = ctx.getImageData(0, 0, w, h), p = datos.data, hist = new Uint32Array(256), i, g;
+        for (i = 0; i < p.length; i += 4) {
+          g = Math.round(0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]);
+          p[i] = g; hist[g]++;
+        }
+        var total = w * h, acum = 0, lo = 0, hi = 255;
+        for (i = 0; i < 256; i++) { acum += hist[i]; if (acum > total * 0.01) { lo = i; break; } }
+        acum = 0;
+        for (i = 255; i >= 0; i--) { acum += hist[i]; if (acum > total * 0.01) { hi = i; break; } }
+        var rango = Math.max(1, hi - lo);
+        for (i = 0; i < p.length; i += 4) {
+          g = Math.min(255, Math.max(0, Math.round((p[i] - lo) * 255 / rango)));
+          p[i] = p[i + 1] = p[i + 2] = g;
+        }
+        ctx.putImageData(datos, 0, 0);
+        resolve({ canvas: c, url: url });
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('imagen no válida')); };
+      img.src = url;
+    });
+  }
+
+  // ---------- Lectura del código de barras (local, sin internet) ----------
+  var zxingCargado = null;
+  function cargarZXing() {
+    if (window.ZXing) return Promise.resolve();
+    if (zxingCargado) return zxingCargado;
+    zxingCargado = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'barras/zxing.min.js';
+      s.onload = function () { resolve(); };
+      s.onerror = function () { zxingCargado = null; reject(new Error('lector de barras no disponible')); };
+      document.head.appendChild(s);
+    });
+    return zxingCargado;
+  }
+  function soloDigitos(v) { return (typeof v === 'string' && /^\d{20,100}$/.test(v)) ? v : null; }
+  function elegirMasLargo(lista) {
+    lista = lista.filter(Boolean);
+    if (!lista.length) return null;
+    lista.sort(function (a, b) { return b.length - a.length; });
+    return lista[0];
+  }
+  function leerConDetector(canvas) {
+    if (!('BarcodeDetector' in window)) return Promise.resolve(null);
+    return window.BarcodeDetector.getSupportedFormats().then(function (sop) {
+      var f = ['itf', 'code_128', 'codabar', 'code_39'].filter(function (x) { return sop.indexOf(x) !== -1; });
+      if (!f.length) return null;
+      return new window.BarcodeDetector({ formats: f }).detect(canvas).then(function (res) {
+        return elegirMasLargo(res.map(function (r) { return soloDigitos(r.rawValue); }));
+      });
+    }).catch(function () { return null; });
+  }
+  function leerConZXing(canvas) {
+    return cargarZXing().then(function () {
+      var Z = window.ZXing;
+      var hints = new Map();
+      hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.ITF, Z.BarcodeFormat.CODE_128, Z.BarcodeFormat.CODABAR, Z.BarcodeFormat.CODE_39]);
+      hints.set(Z.DecodeHintType.TRY_HARDER, true);
+      var lector = new Z.MultiFormatReader();
+      lector.setHints(hints);
+      var w = canvas.width, h = canvas.height;
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      // El código de pago suele estar abajo; después se prueba la hoja entera y la parte de arriba.
+      var zonas = [[Math.floor(h * 0.55), h], [0, h], [0, Math.floor(h * 0.5)]];
+      var hallados = [];
+      zonas.forEach(function (z) {
+        var alto = z[1] - z[0];
+        if (alto < 20) return;
+        var d = ctx.getImageData(0, z[0], w, alto).data;
+        var lum = new Uint8ClampedArray(w * alto);
+        for (var i = 0, j = 0; i < d.length; i += 4, j++) lum[j] = d[i];
+        try {
+          var src = new Z.RGBLuminanceSource(lum, w, alto);
+          var r = lector.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(src)), hints);
+          hallados.push(soloDigitos(r.getText()));
+        } catch (e) { /* no se encontró código en esta zona */ } finally { lector.reset(); }
+      });
+      return elegirMasLargo(hallados);
+    }).catch(function () { return null; });
+  }
+  function leerCodigoBarras(canvas) {
+    return leerConDetector(canvas).then(function (c) { return c || leerConZXing(canvas); });
+  }
+
+  function cerrarOCR() {
+    var d = $('dlg-ocr');
+    if (d.open) d.close();
+    $('ocr-preview').removeAttribute('src');
+  }
+  function cancelarOCR() {
+    ocrCancelado = true;
+    if (ocrWorker) { try { ocrWorker.terminate(); } catch (e) { /* ya cerrado */ } ocrWorker = null; }
+    cerrarOCR();
+  }
+
+  function procesarFoto(e) {
+    var input = e.target;
+    var file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { window.alert('El archivo elegido no es una foto.'); return; }
+    if (file.size > 30 * 1024 * 1024) { window.alert('La foto es demasiado pesada.'); return; }
+    ocrCancelado = false;
+    $('ocr-progreso').value = 0;
+    $('ocr-estado').textContent = 'Preparando…';
+    $('dlg-ocr').showModal();
+    var prep = null;
+    prepararImagen(file)
+      .then(function (r) { prep = r; $('ocr-preview').src = r.url; return obtenerLector(); })
+      .then(function (w) {
+        if (ocrCancelado) throw new Error('cancelado');
+        $('ocr-estado').textContent = ESTADOS_OCR['recognizing text'];
+        return w.recognize(prep.canvas);
+      })
+      .then(function (res) {
+        if (ocrCancelado) return;
+        var datos = analizarTexto((res && res.data && res.data.text) || '');
+        $('ocr-estado').textContent = 'Buscando el código de barras…';
+        return leerCodigoBarras(prep.canvas).then(function (barras) {
+          if (ocrCancelado) return;
+          if (barras) { datos.codigo = barras; datos.codigoDesdeBarras = true; delete datos.sinTexto; }
+          cerrarOCR();
+          abrirCarga(datos);
+        });
+      })
+      .catch(function () {
+        if (ocrCancelado) return;
+        cerrarOCR();
+        abrirCarga({ error: true });
+      })
+      .then(function () { if (prep) URL.revokeObjectURL(prep.url); });
+  }
+
+  // ---------- Interpretación del texto leído ----------
+  function normalizar(s) { return s.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+
+  // [expresión, nombre de la empresa, servicio, peso]
+  var EMPRESAS = [
+    [/\bEDENOR\b/, 'Edenor', 'Electricidad', 10],
+    [/\bEDESUR\b/, 'Edesur', 'Electricidad', 10],
+    [/\bEDELAP\b/, 'Edelap', 'Electricidad', 10],
+    [/\bEDEA\b/, 'EDEA', 'Electricidad', 10],
+    [/\bEDEN\b/, 'EDEN', 'Electricidad', 10],
+    [/\bEDES\b/, 'EDES', 'Electricidad', 10],
+    [/\bEPEC\b/, 'EPEC', 'Electricidad', 10],
+    [/EMPRESA PROVINCIAL DE LA ENERGIA/, 'EPE', 'Electricidad', 10],
+    [/\bEDEMSA\b/, 'Edemsa', 'Electricidad', 10],
+    [/METROGAS/, 'Metrogas', 'Gas', 10],
+    [/NATURGY/, 'Naturgy', 'Gas', 10],
+    [/CAMUZZI/, 'Camuzzi', 'Gas', 10],
+    [/LITORAL\s*GAS/, 'Litoral Gas', 'Gas', 10],
+    [/ECOGAS/, 'Ecogas', 'Gas', 10],
+    [/\bAYSA\b|AGUA Y SANEAMIENTOS ARGENTINOS/, 'AySA', 'Agua', 10],
+    [/\bABSA\b|AGUAS BONAERENSES/, 'ABSA', 'Agua', 10],
+    [/AGUAS SANTAFESINAS/, 'Aguas Santafesinas', 'Agua', 10],
+    [/AGUAS CORDOBESAS/, 'Aguas Cordobesas', 'Agua', 10],
+    [/ALUMBRADO,?\s*BARRIDO\s*Y\s*LIMPIEZA|\bA\.?B\.?L\.?\b/, 'ABL', 'Municipal', 12],
+    [/\bARBA\b|AGENCIA DE RECAUDACION DE LA PROVINCIA/, 'ARBA', 'Provincial', 10],
+    [/\bAGIP\b/, 'AGIP', 'Provincial', 8],
+    [/IMPUESTO INMOBILIARIO/, null, 'Provincial', 4],
+    [/MUNICIPALIDAD DE|MUNICIPIO DE/, null, 'Municipal', 4],
+    [/\bKWH\b/, null, 'Electricidad', 3],
+    [/ENERGIA ELECTRICA/, null, 'Electricidad', 3],
+    [/GAS NATURAL/, null, 'Gas', 3],
+    [/AGUA POTABLE|CLOACA/, null, 'Agua', 3],
+    [/TASA (POR )?SERVICIOS GENERALES|SERVICIOS URBANOS/, null, 'Municipal', 3]
+  ];
+  var MES_NUM = { ENERO: 1, FEBRERO: 2, MARZO: 3, ABRIL: 4, MAYO: 5, JUNIO: 6, JULIO: 7, AGOSTO: 8,
+                  SEPTIEMBRE: 9, SETIEMBRE: 9, OCTUBRE: 10, NOVIEMBRE: 11, DICIEMBRE: 12 };
+  var CLAVES_TOTAL = [/TOTAL\s*A\s*PAGAR/, /IMPORTE\s*A\s*PAGAR/, /TOTAL\s*A\s*ABONAR/, /SALDO\s*A\s*PAGAR/,
+                      /IMPORTE\s*TOTAL/, /TOTAL\s*(DE\s*LA\s*)?FACTURA/, /\bTOTAL\b/];
+
+  function esSegundoVenc(l) { return /\b2\s*[°ºO"'”]?\s*VENC|SEGUNDO\s*VENC|RECARGO/.test(l); }
+  function montosEn(linea) {
+    var m = linea.match(/\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+[.,]\d{2}(?!\d)/g) || [];
+    return m.map(parseNumeroAR).filter(function (n) { return Number.isFinite(n) && n > 0 && n <= MONTO_MAX; });
+  }
+
+  function analizarTexto(texto) {
+    var t = normalizar(texto);
+    var res = {};
+    if (t.replace(/\s/g, '').length < 20) { res.sinTexto = true; return res; }
+
+    // Empresa y servicio
+    var puntos = {}, mejorEmpresa = {};
+    EMPRESAS.forEach(function (e) {
+      if (e[0].test(t)) {
+        puntos[e[2]] = (puntos[e[2]] || 0) + e[3];
+        if (e[1] && (!mejorEmpresa[e[2]] || e[3] > mejorEmpresa[e[2]][1])) mejorEmpresa[e[2]] = [e[1], e[3]];
+      }
+    });
+    var elegido = null;
+    Object.keys(puntos).forEach(function (k) { if (puntos[k] >= 3 && (!elegido || puntos[k] > puntos[elegido])) elegido = k; });
+    if (elegido) {
+      res.servicio = elegido;
+      if (mejorEmpresa[elegido]) res.empresa = mejorEmpresa[elegido][0];
+    }
+
+    var lineas = t.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+
+    // Total a pagar
+    for (var k = 0; k < CLAVES_TOTAL.length && !res.monto; k++) {
+      for (var i = 0; i < lineas.length; i++) {
+        if (!CLAVES_TOTAL[k].test(lineas[i])) continue;
+        // Nunca el total del 2° vencimiento o con recargo
+        if (esSegundoVenc(lineas[i]) || (i > 0 && esSegundoVenc(lineas[i - 1]))) continue;
+        var c = montosEn(lineas[i]);
+        if (!c.length && i + 1 < lineas.length) c = montosEn(lineas[i + 1]);
+        if (c.length) { res.monto = c[0]; break; }
+      }
+    }
+
+    // Consumo
+    for (var j = 0; j < lineas.length; j++) {
+      if (!/CONSUMO/.test(lineas[j])) continue;
+      var mc = lineas[j].match(/(\d{1,3}(?:[.,]\d{3})+|\d+)\s*(KWH|M3|M³)/);
+      if (mc) {
+        var n = Number(mc[1].replace(/[.,]/g, ''));
+        if (n > 0 && n < 100000) { res.consumo = n; break; }
+      }
+    }
+
+    // Tasas municipales incluidas en la boleta (se suma el último importe de cada renglón)
+    var sumaTasas = 0, vistos = {};
+    lineas.forEach(function (l) {
+      var mt = l.match(/TASA|ALUMBRADO\s*PUBLICO|CONTRIBUCION\s*MUNICIPAL|MUNICIPALIDAD|\bMUNICIPAL\b|SEGURIDAD\s*E\s*HIGIENE/);
+      if (!mt) return;
+      if (/INTERES|\bIVA\b|TOTAL|VENC|PUNITORI|RECARGO/.test(l)) return;
+      var resto = l.slice(mt.index);
+      var c = montosEn(resto);
+      if (c.length) {
+        var imp = c[0];
+        if (!vistos[imp]) { vistos[imp] = true; sumaTasas += imp; }
+      }
+    });
+    sumaTasas = Math.round(sumaTasas * 100) / 100;
+    if (sumaTasas > 0 && (!res.monto || sumaTasas < res.monto)) res.tasas = sumaTasas;
+
+    // Lectura estimada
+    res.esEstimado = lineas.some(function (l) {
+      return /ESTIMAD/.test(l) && /LECTURA|ESTADO|MEDIDOR|CONSUMO/.test(l) && !/VENC|PROXIMA/.test(l);
+    }) && !lineas.some(function (l) { return /ESTADO\s*ACTUAL/.test(l) && /\(?REAL\)?/.test(l); });
+    if (!res.esEstimado) delete res.esEstimado;
+
+    // Número de cliente o cuenta
+    for (var x = 0; x < lineas.length; x++) {
+      if (/CLAVE|MENSAJE/.test(lineas[x])) continue;
+      var mcl = lineas[x].match(/(?:CLIENTE|N[°ºO]?\s*DE\s*CUENTA|NRO\.?\s*DE\s*CUENTA|CUENTA\s*N[°ºO]?)[^0-9]{0,15}(\d[\d .\-\/]{2,22}\d)/);
+      if (mcl) {
+        var dg = mcl[1].replace(/\D/g, '');
+        if (dg.length >= 4 && dg.length <= 20) { res.cliente = dg; break; }
+      }
+    }
+    // Número de medidor
+    for (var y = 0; y < lineas.length; y++) {
+      var mme = lineas[y].match(/MEDIDOR[^A-Z0-9]{0,12}([A-Z0-9][A-Z0-9-]{2,19})/);
+      if (mme && /\d{3,}/.test(mme[1])) { res.medidor = mme[1]; break; }
+    }
+    // Números del código de pago (respaldo si no se puede leer el código de barras)
+    var largos = [];
+    lineas.forEach(function (l) {
+      var m = l.replace(/[\s.]/g, '').match(/\d{30,100}/g);
+      if (m) largos = largos.concat(m);
+    });
+    var cod = elegirMasLargo(largos);
+    if (cod) res.codigo = cod;
+    // Deuda o saldo anterior
+    for (var z = 0; z < lineas.length; z++) {
+      var md = lineas[z].match(/SALDO\s*ANTERIOR|DEUDA\s*ANTERIOR|PERIODOS?\s*ADEUDADOS?|IMPORTE\s*VENCIDO|DEUDA\s*PENDIENTE/);
+      if (!md || /SIN\s*DEUDA|NO\s*REGISTRA/.test(lineas[z])) continue;
+      var cd = montosEn(lineas[z].slice(md.index));
+      if (cd.length && cd[0] > 0) { res.deuda = cd[0]; break; }
+    }
+    // Señales de posible estafa
+    var sen = [];
+    if (lineas.some(function (l) { return /\bCBU\b|\bCVU\b|\bALIAS\b|TRANSFER/.test(l) && !/DEBITO|ADHESION|ADHERI/.test(l); })) sen.push('transferencia');
+    if (/\bTOKEN\b|CODIGO\s*DE\s*SEGURIDAD|\bCVV\b|\bCVC\b|DATOS\s*DE\s*(SU\s*|TU\s*)?TARJETA|NUMERO\s*DE\s*(SU\s*|TU\s*)?TARJETA|CLAVE\s*(BANCARIA|DE\s*HOME|DEL\s*HOME|TOKEN|DE\s*CAJERO)/.test(t)) sen.push('datos');
+    if (/CORTE\s*INMEDIATO|ULTIMO\s*AVISO|SUSPENSION\s*INMEDIATA|DENTRO\s*DE\s*LAS?\s*\d+\s*(HS|HORAS)|PAGUE\s*HOY|ABONE\s*HOY|EN\s*EL\s*DIA\s*DE\s*HOY|URGENTE/.test(t)) sen.push('presion');
+    if (sen.length) res.senales = sen;
+
+    // Mes de la boleta: mes escrito con año, o fecha de vencimiento
+    var anioActual = new Date().getFullYear();
+    function periodoValido(a, m) { return a >= anioActual - 4 && a <= anioActual + 1 && m >= 1 && m <= 12; }
+    var cuenta = {}, re = /(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)[\s\/\-.]*(?:DE\s*|DEL\s*)?(20\d\d)/g, mm;
+    while ((mm = re.exec(t)) !== null) {
+      var a = +mm[2], me = MES_NUM[mm[1]];
+      if (periodoValido(a, me)) { var p = a + '-' + String(me).padStart(2, '0'); cuenta[p] = (cuenta[p] || 0) + 1; }
+    }
+    var mejorP = null;
+    Object.keys(cuenta).forEach(function (p) { if (!mejorP || cuenta[p] > cuenta[mejorP] || (cuenta[p] === cuenta[mejorP] && p > mejorP)) mejorP = p; });
+    if (mejorP) {
+      res.periodo = mejorP;
+    } else {
+      var reFecha = /(\d{1,2})[\/.\-](\d{1,2})[\/.\-](20\d\d|\d\d)\b/;
+      for (var w = 0; w < lineas.length && !res.periodo; w++) {
+        if (!/(ESTADO|LECTURA)\s*ACTUAL/.test(lineas[w])) continue;
+        var fl = lineas[w].match(reFecha);
+        if (fl) {
+          var al = fl[3].length === 2 ? 2000 + +fl[3] : +fl[3];
+          if (periodoValido(al, +fl[2])) { res.periodo = al + '-' + String(+fl[2]).padStart(2, '0'); res.periodoPor = 'la fecha de lectura del medidor'; }
+        }
+      }
+      for (var v = 0; v < lineas.length && !res.periodo; v++) {
+        if (!/VENC|\bVTO\b/.test(lineas[v]) || esSegundoVenc(lineas[v])) continue;
+        var bloque = lineas[v] + ' ' + (lineas[v + 1] || '');
+        var f = bloque.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](20\d\d|\d\d)\b/);
+        if (f) {
+          var anio = f[3].length === 2 ? 2000 + +f[3] : +f[3];
+          if (periodoValido(anio, +f[2])) { res.periodo = anio + '-' + String(+f[2]).padStart(2, '0'); res.periodoPor = 'la fecha de vencimiento'; break; }
+        }
+      }
+    }
+    return res;
+  }
+
+  // ---------- Copia de seguridad ----------
+  function exportar() {
+    if (!registros.length) { window.alert('Todavía no hay boletas para guardar.'); return; }
+    var datos = registros.map(function (r) {
+      return { servicio: r.servicio, periodo: r.periodo, monto: r.monto, consumo: r.consumo, tasas: r.tasas, esEstimado: r.esEstimado,
+               cliente: r.cliente, medidor: r.medidor, codigo: r.codigo, deuda: r.deuda, senales: r.senales, pagada: r.pagada, fecha: r.fecha };
+    });
+    var blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'CuentasClaras_copia_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importar(e) {
+    var input = e.target;
+    var file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (!db) { window.alert('El almacenamiento no está disponible.'); return; }
+    if (file.size > MAX_ARCHIVO) { window.alert('El archivo es demasiado grande para ser una copia de Cuentas Claras.'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var datos;
+      try { datos = JSON.parse(String(reader.result)); } catch (err) { window.alert('El archivo no es una copia válida de Cuentas Claras.'); return; }
+      if (!Array.isArray(datos)) { window.alert('El archivo no es una copia válida de Cuentas Claras.'); return; }
+      if (datos.length > MAX_REGISTROS) { window.alert('El archivo tiene demasiados registros.'); return; }
+      var validos = [], descartados = 0, repetidos = 0;
+      var existentes = {};
+      registros.forEach(function (r) { existentes[r.servicio + '|' + r.periodo + '|' + r.monto] = true; });
+      datos.forEach(function (d) {
+        var v = validarRegistro(d);
+        if (!v) { descartados++; return; }
+        var k = v.servicio + '|' + v.periodo + '|' + v.monto;
+        if (existentes[k]) { repetidos++; return; }
+        existentes[k] = true;
+        validos.push(v);
+      });
+      if (!validos.length) {
+        window.alert('No hay boletas nuevas para agregar.' + (descartados ? ' Se ignoraron ' + descartados + ' registros con datos inválidos.' : ''));
+        return;
+      }
+      var msg = 'Se van a agregar ' + validos.length + ' boletas.';
+      if (repetidos) msg += '\n' + repetidos + ' ya estaban cargadas y se omiten.';
+      if (descartados) msg += '\n' + descartados + ' registros tienen datos inválidos y se ignoran.';
+      if (!window.confirm(msg + '\n\n¿Continuar?')) return;
+      agregar(validos).then(recargar).then(function () { window.alert('Copia recuperada.'); })
+        .catch(function () { window.alert('No se pudo recuperar la copia.'); });
+    };
+    reader.onerror = function () { window.alert('No se pudo leer el archivo.'); };
+    reader.readAsText(file);
+  }
+
+  // ---------- Aviso legal ----------
+  function avisoAceptado() { try { return localStorage.getItem(CLAVE_AVISO) === 'true'; } catch (e) { return false; } }
+  function prepararAviso() {
+    var dlg = $('dlg-aviso');
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); });
+    $('chk-aviso').addEventListener('change', function () { $('btn-aceptar-aviso').disabled = !this.checked; });
+    $('btn-aceptar-aviso').addEventListener('click', function () {
+      try { localStorage.setItem(CLAVE_AVISO, 'true'); } catch (e) { /* modo privado */ }
+      dlg.close();
+    });
+    if (!avisoAceptado()) dlg.showModal();
+  }
+
+  // ---------- Instalación como app ----------
+  var eventoInstalar = null;
+  function esInstalada() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  }
+  function esIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function renderInstalar() {
+    var txt = $('instalar-texto'), btn = $('btn-instalar');
+    btn.classList.add('oculto');
+    if (esInstalada()) {
+      txt.textContent = '✅ La app ya está instalada en este teléfono.';
+    } else if (eventoInstalar) {
+      txt.textContent = 'Podés instalarla como una aplicación más y abrirla aunque no tengas internet.';
+      btn.classList.remove('oculto');
+    } else if (esIOS()) {
+      txt.textContent = 'Para instalarla: en Safari tocá el botón Compartir (el cuadrado con una flecha hacia arriba) y elegí "Agregar a inicio".';
+    } else {
+      txt.textContent = 'Para instalarla: abrí el menú del navegador (los tres puntitos) y elegí "Instalar aplicación" o "Agregar a la pantalla principal".';
+    }
+  }
+  function registrarServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    var local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (location.protocol !== 'https:' && !local) return;
+    navigator.serviceWorker.register('sw.js').catch(function () { /* sin modo sin conexión */ });
+  }
+
+  // ---------- Bloqueo con huella (usa el desbloqueo del propio teléfono) ----------
+  // Importante: es un bloqueo de acceso a la pantalla. No cifra los datos.
+  var CLAVE_BLOQUEO = 'cuentas_claras_bloqueo';
+  var bloqueada = false;
+  var ocultaDesde = 0;
+  var MINUTOS_REBLOQUEO = 3;
+
+  function azar(n) { var u = new Uint8Array(n); crypto.getRandomValues(u); return u; }
+  function aB64u(buf) {
+    var s = '', u = new Uint8Array(buf);
+    for (var i = 0; i < u.length; i++) s += String.fromCharCode(u[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function deB64u(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  function leerBloqueo() {
+    try {
+      var v = JSON.parse(localStorage.getItem(CLAVE_BLOQUEO) || 'null');
+      return (v && typeof v.id === 'string' && /^[A-Za-z0-9_-]{16,1400}$/.test(v.id)) ? v : null;
+    } catch (e) { return null; }
+  }
+  function huellaDisponible() {
+    if (!window.isSecureContext || !window.PublicKeyCredential ||
+        typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return Promise.resolve(false);
+    return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function () { return false; });
+  }
+  function verificarHuella() {
+    var b = leerBloqueo();
+    if (!b) return Promise.resolve(true);
+    return navigator.credentials.get({ publicKey: {
+      challenge: azar(32),
+      allowCredentials: [{ type: 'public-key', id: deB64u(b.id), transports: ['internal', 'hybrid'] }],
+      userVerification: 'required',
+      timeout: 60000
+    } }).then(function (a) {
+      if (!a || aB64u(a.rawId) !== b.id) throw new Error('credencial distinta');
+      var flags = new Uint8Array(a.response.authenticatorData)[32];
+      if (!(flags & 0x04)) throw new Error('sin verificación del usuario');
+      return true;
+    });
+  }
+  function activarBloqueo() {
+    var ok = window.confirm('Vas a activar el bloqueo con huella.\n\nCada vez que abras la app, el teléfono te va a pedir tu huella (o el PIN, patrón o cara con que desbloqueás el teléfono).\n\nAntes de activarlo, conviene guardar una copia de seguridad.\n\n¿Continuar?');
+    if (!ok) return;
+    navigator.credentials.create({ publicKey: {
+      challenge: azar(32),
+      rp: { name: 'Cuentas Claras' },
+      user: { id: azar(16), name: 'cuentas-claras', displayName: 'Cuentas Claras' },
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+      authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' },
+      attestation: 'none',
+      timeout: 60000
+    } }).then(function (cred) {
+      if (!cred) throw new Error('sin credencial');
+      localStorage.setItem(CLAVE_BLOQUEO, JSON.stringify({ id: aB64u(cred.rawId) }));
+      renderBloqueoAjustes();
+      window.alert('Listo. Desde ahora la app te va a pedir la huella al abrirla.');
+    }).catch(function () {
+      window.alert('No se pudo activar el bloqueo. Podés intentarlo de nuevo.');
+    });
+  }
+  function desactivarBloqueo() {
+    if (!window.confirm('¿Quitar el bloqueo con huella? Te la vamos a pedir una última vez para confirmar.')) return;
+    verificarHuella().then(function () {
+      try { localStorage.removeItem(CLAVE_BLOQUEO); } catch (e) { /* nada */ }
+      renderBloqueoAjustes();
+      window.alert('Bloqueo desactivado.');
+    }).catch(function () { window.alert('No se pudo verificar la huella. El bloqueo sigue activo.'); });
+  }
+  function renderBloqueoAjustes() {
+    var btn = $('btn-bloqueo'), txt = $('bloqueo-texto');
+    huellaDisponible().then(function (disp) {
+      var activo = !!leerBloqueo();
+      if (activo) {
+        txt.textContent = '✅ Activado. La app pide tu huella al abrirla. Evita que otra persona la abra en tu teléfono; no cifra los datos.';
+        btn.textContent = 'Quitar bloqueo con huella';
+        btn.classList.remove('oculto');
+      } else if (disp) {
+        txt.textContent = 'Pide tu huella (o el bloqueo de pantalla del teléfono) cada vez que abrís la app. Evita que otra persona la abra en tu teléfono; no cifra los datos.';
+        btn.textContent = 'Activar bloqueo con huella';
+        btn.classList.remove('oculto');
+      } else {
+        txt.textContent = 'Este teléfono o navegador no permite el bloqueo con huella. Tus datos quedan protegidos por el bloqueo de pantalla del teléfono.';
+        btn.classList.add('oculto');
+      }
+    });
+  }
+  function ponerInerte(si) {
+    ['header', 'main'].forEach(function (sel) { var n = document.querySelector(sel); if (n) n.inert = si; });
+  }
+  function bloquear() {
+    bloqueada = true;
+    ['dlg-carga', 'dlg-ocr'].forEach(function (id) { var d = $(id); if (d.open) d.close(); });
+    registros = [];
+    ultimoId = null;
+    renderTodo();
+    ponerInerte(true);
+    $('bloqueo-error').textContent = '';
+    $('pantalla-bloqueo').classList.remove('oculto');
+    $('btn-desbloquear').focus();
+  }
+  function intentarDesbloqueo() {
+    $('bloqueo-error').textContent = '';
+    verificarHuella().then(function () {
+      bloqueada = false;
+      $('pantalla-bloqueo').classList.add('oculto');
+      ponerInerte(false);
+      if (db) recargar();
+    }).catch(function () {
+      $('bloqueo-error').textContent = 'No se pudo verificar. Tocá "Desbloquear" para intentar de nuevo.';
+    });
+  }
+
+  // ---------- Inicio ----------
+  function iniciar() {
+    prepararFormulario();
+    $('btn-cargar').addEventListener('click', function () { abrirCarga(null); });
+    $('btn-foto').addEventListener('click', function () { $('input-foto').click(); });
+    $('input-foto').addEventListener('change', procesarFoto);
+    $('btn-ocr-cancelar').addEventListener('click', cancelarOCR);
+    $('dlg-ocr').addEventListener('cancel', function (ev) { ev.preventDefault(); cancelarOCR(); });
+    $('btn-cancelar').addEventListener('click', function () { $('dlg-carga').close(); });
+    $('form-boleta').addEventListener('submit', enviarFormulario);
+    $('btn-exportar').addEventListener('click', exportar);
+    $('btn-importar').addEventListener('click', function () { $('input-importar').click(); });
+    $('input-importar').addEventListener('change', importar);
+    $('btn-instrucciones').addEventListener('click', function () {
+      hablar('Bienvenido a Cuentas Claras. Tocá el botón azul y sacale una foto a la boleta, derecha y con buena luz. La aplicación reconoce de qué servicio es y completa los datos. Revisalos, tocá Guardar y revisar, y te dice si la boleta está en orden o si conviene revisarla. Si preferís, podés cargar los datos a mano.');
+    });
+    $('btn-instalar').addEventListener('click', function () {
+      if (!eventoInstalar) return;
+      eventoInstalar.prompt();
+      eventoInstalar.userChoice.then(function () { eventoInstalar = null; renderInstalar(); }, function () { eventoInstalar = null; renderInstalar(); });
+    });
+    window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); eventoInstalar = ev; renderInstalar(); });
+    window.addEventListener('appinstalled', function () { eventoInstalar = null; renderInstalar(); });
+    $('btn-bloqueo').addEventListener('click', function () { if (leerBloqueo()) desactivarBloqueo(); else activarBloqueo(); });
+    $('btn-desbloquear').addEventListener('click', intentarDesbloqueo);
+    Array.prototype.forEach.call(document.querySelectorAll('.nav-inferior button'), function (b) {
+      b.addEventListener('click', function () {
+        var destino = $(b.getAttribute('data-ir'));
+        if (!destino) return;
+        Array.prototype.forEach.call(document.querySelectorAll('.nav-inferior button'), function (x) { x.classList.remove('activo'); x.removeAttribute('aria-current'); });
+        b.classList.add('activo');
+        b.setAttribute('aria-current', 'true');
+        destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var tit = destino.querySelector('h2');
+        if (tit) { tit.setAttribute('tabindex', '-1'); tit.focus({ preventScroll: true }); }
+      });
+    });
+    $('btn-escuchar-consejos').addEventListener('click', function () {
+      hablar('Consejos para cuidarte de las boletas truchas. ' + $('sec-cuidados').querySelector('.consejos').textContent.replace(/\s+/g, ' '));
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { ocultaDesde = Date.now(); return; }
+      if (leerBloqueo() && !bloqueada && ocultaDesde && Date.now() - ocultaDesde > MINUTOS_REBLOQUEO * 60000) bloquear();
+    });
+    renderTodo();
+    renderInstalar();
+    renderBloqueoAjustes();
+    registrarServiceWorker();
+    if (leerBloqueo()) bloquear();
+    prepararAviso();
+    abrirDB().then(function (d) { db = d; return bloqueada ? null : recargar(); }).catch(function () {
+      mostrarError('No se pudo abrir el almacenamiento del navegador. Si estás en modo incógnito, abrí la aplicación en una ventana normal.');
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+})();
+</script>
+</body>
+</html>
